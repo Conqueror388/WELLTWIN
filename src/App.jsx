@@ -907,19 +907,23 @@ function App() {
         <div className={`px-6 py-2 flex items-center justify-between gap-3 border-b ${darkMode ? 'border-zinc-900/80 bg-[#07080b]' : 'border-slate-200/80 bg-white'}`}>
           
           {/* Brand & Field Controls */}
-          <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
-            <div className="bg-white px-2.5 py-1 rounded-xl shadow-sm border border-white/80 flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-3.5 min-w-0 flex-shrink-0">
+            <div className={`px-3 py-1.5 rounded-2xl flex items-center justify-center shrink-0 transition-all ${
+              darkMode 
+                ? 'bg-white shadow-[0_0_20px_rgba(255,255,255,0.35)] border-2 border-amber-400/80' 
+                : 'bg-white shadow-[0_4px_14px_rgba(15,23,42,0.12)] border-2 border-amber-500/80'
+            }`}>
               <img
                 src="/oil-india-logo.png"
-                alt="Oil India Limited"
-                className="h-7 w-auto object-contain flex-shrink-0"
+                alt="Oil India Limited Official Logo"
+                className="h-10 sm:h-11 w-auto object-contain flex-shrink-0 drop-shadow-sm"
               />
             </div>
             <div className="flex-shrink-0">
-              <h1 className="text-sm sm:text-base font-bold font-display tracking-widest text-white dark:text-white light:text-slate-900 uppercase leading-none whitespace-nowrap">
+              <h1 className="text-base sm:text-lg font-black font-display tracking-widest text-white dark:text-white light:text-slate-950 uppercase leading-none whitespace-nowrap">
                 OIL INDIA LIMITED
               </h1>
-              <span className="text-[10px] sm:text-xs font-bold font-mono tracking-wider mt-0.5 block text-amber-400 dark:text-amber-400 light:text-amber-700 leading-none whitespace-nowrap">
+              <span className="text-[11px] sm:text-xs font-black font-mono tracking-wider mt-1 block text-amber-400 dark:text-amber-400 light:text-amber-800 leading-none whitespace-nowrap">
                 BAGHEWALA PLATFORM • CSS–SRP DIGITAL TWIN
               </span>
             </div>

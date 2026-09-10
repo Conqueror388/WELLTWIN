@@ -353,12 +353,16 @@ export default function CinematicIntroPage({
           darkMode ? 'bg-black/80 border-zinc-800/80 text-white' : 'bg-white/90 border-slate-300 text-slate-900 shadow-sm'
         }`}
       >
-        <div className="flex items-center gap-3">
-          <div className="bg-white px-2.5 py-1 rounded-xl shadow-sm border border-white/80 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3.5">
+          <div className={`px-3 py-1.5 rounded-2xl flex items-center justify-center shrink-0 transition-all ${
+            darkMode 
+              ? 'bg-white shadow-[0_0_20px_rgba(255,255,255,0.35)] border-2 border-amber-400/80' 
+              : 'bg-white shadow-[0_4px_14px_rgba(15,23,42,0.12)] border-2 border-amber-500/80'
+          }`}>
             <img
               src="/oil-india-logo.png"
               alt="Oil India Limited Official Logo"
-              className="h-7 sm:h-8 w-auto object-contain"
+              className="h-9 sm:h-10 w-auto object-contain drop-shadow-sm"
             />
           </div>
           <div>

@@ -461,18 +461,22 @@ export default function EngineerAdminLogin({
       <header className={`relative z-20 w-full px-6 lg:px-12 py-3.5 border-b backdrop-blur-2xl flex flex-wrap justify-between items-center gap-4 ${
         darkMode ? 'bg-black/70 border-zinc-800/80 text-zinc-100 shadow-[0_4px_30px_rgba(0,0,0,0.5)]' : 'bg-white/85 border-slate-200 text-slate-800 shadow-sm'
       }`}>
-        <div className="flex items-center gap-3.5">
-          <div className="bg-white px-3 py-1.5 rounded-xl shadow-sm border border-white/80 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-4">
+          <div className={`px-3.5 py-2 rounded-2xl flex items-center justify-center shrink-0 transition-all ${
+            darkMode 
+              ? 'bg-white shadow-[0_0_24px_rgba(255,255,255,0.4)] border-2 border-amber-400/80' 
+              : 'bg-white shadow-[0_4px_16px_rgba(15,23,42,0.14)] border-2 border-amber-500/80'
+          }`}>
             <img
               src="/oil-india-logo.png"
-              alt="Oil India Limited"
-              className="h-8 sm:h-9 w-auto object-contain flex-shrink-0"
+              alt="Oil India Limited Official Logo"
+              className="h-11 sm:h-12 w-auto object-contain flex-shrink-0 drop-shadow-sm"
             />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className={`text-base sm:text-lg font-black font-display tracking-widest uppercase leading-none ${
-                darkMode ? 'text-white' : 'text-slate-900'
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className={`text-lg sm:text-xl font-black font-display tracking-widest uppercase leading-none ${
+                darkMode ? 'text-white' : 'text-slate-950'
               }`}>
                 OIL INDIA LIMITED
               </h1>
