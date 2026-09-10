@@ -4,20 +4,20 @@
   "description": "Oil India Limited - Baghewala Heavy Oil Field CSS & SRP Joint Digital Twin Platform",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#07080b",
+  "background_color": "#ffffff",
   "theme_color": "#f59e0b",
   "orientation": "any",
   "icons": [
     {
-      "src": "/oil-india-logo.png",
-      "sizes": "192x192 512x512",
-      "type": "image/png",
+      "src": "/app-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/oil-india-logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/oil-india-logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
       "purpose": "any"
     }
   ]
