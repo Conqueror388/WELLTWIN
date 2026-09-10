@@ -1,0 +1,24 @@
+{
+  "name": "Oil India Limited - Baghewala Digital Twin",
+  "short_name": "OIL Twin",
+  "description": "Oil India Limited - Baghewala Heavy Oil Field CSS & SRP Joint Digital Twin Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07080b",
+  "theme_color": "#f59e0b",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/oil-india-logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/oil-india-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

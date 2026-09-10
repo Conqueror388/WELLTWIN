@@ -2,13 +2,48 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/oil-india-logo.png" />
+    <link rel="apple-touch-icon" href="/oil-india-logo.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#f59e0b" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="OIL Twin" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Baghewala Digital Twin | CSS+SRP Optimization</title>
-        <!-- Stylish Google Fonts: Outfit, Space Grotesk, Syne, Chakra Petch, Orbitron, Rajdhani, JetBrains Mono, Syncopate, Unbounded, Michroma, Cinzel -->
+
+    <!-- SEO & Social Sharing (Shows Official Logo when link is shared or searched) -->
+    <title>Oil India Limited | Baghewala Heavy Oil CSS–SRP Digital Twin</title>
+    <meta name="title" content="Oil India Limited | Baghewala Heavy Oil CSS–SRP Digital Twin" />
+    <meta name="description" content="Official Oil India Limited (OIL) Digital Twin Platform for Cyclic Steam Stimulation (CSS) and Sucker Rod Pumping (SRP) joint physics-AI optimization in the Baghewala heavy oil reservoir." />
+    <meta name="keywords" content="Oil India Limited, OIL, Digital Twin, Baghewala, CSS, SRP, Artificial Lift, Heavy Oil, EOR, Petroleum Engineering" />
+
+    <!-- Open Graph / Facebook / WhatsApp / LinkedIn Link Previews -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Oil India Limited | Baghewala CSS–SRP Digital Twin" />
+    <meta property="og:description" content="Real-time subsurface physics simulations, 3D well-to-surface kinematics, and NSGA-II multi-objective EOR optimization." />
+    <meta property="og:image" content="/oil-india-logo.png" />
+
+    <!-- Twitter Cards Preview -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="Oil India Limited | Baghewala CSS–SRP Digital Twin" />
+    <meta property="twitter:description" content="Real-time subsurface physics simulations, 3D well-to-surface kinematics, and NSGA-II multi-objective EOR optimization." />
+    <meta property="twitter:image" content="/oil-india-logo.png" />
+
+    <!-- Stylish Google Fonts: Inter, Space Grotesk, JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.log('Service Worker registration skipped:', err);
+          });
+        });
+      }
+    </script>
   </head>
   <body class="bg-[#07080b] text-zinc-100 font-stylish antialiased overflow-x-hidden">
     <div id="root"></div>

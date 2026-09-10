@@ -71,7 +71,8 @@ import {
   UserCheck,
   ChevronDown,
   Compass,
-  FileCheck
+  FileCheck,
+  Download
 } from 'lucide-react';
 import { 
   runPhysicsModel, 
@@ -292,6 +293,51 @@ function App() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [xrayExploded, setXrayExploded] = useState(false);
   const [showExecutiveDossier, setShowExecutiveDossier] = useState(false);
+  
+  // PWA Web Install State
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState(null);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
+
+  useEffect(() => {
+    // Detect standalone PWA mode
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+      setIsAppInstalled(true);
+    }
+
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      setDeferredInstallPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setIsAppInstalled(true);
+      setDeferredInstallPrompt(null);
+      showToast('Oil India Limited Digital Twin installed to desktop/home screen!');
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallApp = async () => {
+    playHoloSound('click');
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      if (outcome === 'accepted') {
+        showToast('Installing OIL Digital Twin...');
+      }
+      setDeferredInstallPrompt(null);
+    } else {
+      // Guide users on desktop or iOS where install prompt API is manual
+      showToast('To install: click the Install icon (⤓) in your browser address bar or tap "Add to Home Screen".');
+    }
+  };
   
   // Enterprise Engineer & Admin Authentication State
   const [currentUser, setCurrentUser] = useState(() => {
@@ -984,6 +1030,23 @@ function App() {
             >
               Intro
             </button>
+
+            {/* Install App Button */}
+            {!isAppInstalled && (
+              <button
+                onClick={handleInstallApp}
+                className={`flex items-center gap-1.5 px-3 h-8 border rounded-xl text-xs font-tactical font-bold uppercase transition-all cursor-pointer shadow-sm ${
+                  darkMode
+                    ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-500/50 hover:shadow-[0_0_12px_rgba(245,158,11,0.4)]'
+                    : 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-400 shadow-sm'
+                }`}
+                title="Install Oil India Limited Digital Twin as an App"
+              >
+                <Download className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Install App</span>
+                <span className="sm:hidden">Install</span>
+              </button>
+            )}
 
             {/* Theme Toggle */}
             <button

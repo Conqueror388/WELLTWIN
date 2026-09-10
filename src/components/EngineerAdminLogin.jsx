@@ -20,7 +20,8 @@ import {
   IdCard, 
   Building2, 
   QrCode, 
-  Film
+  Film,
+  Download
 } from 'lucide-react';
 
 // Web audio feedback synthesizer for holographic enterprise HUD
@@ -196,6 +197,41 @@ export default function EngineerAdminLogin({
   const [authError, setAuthError] = useState(null);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanStepIndex, setScanStepIndex] = useState(0);
+
+  // PWA Install State
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  useEffect(() => {
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+      setIsInstalled(true);
+    }
+    const onPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    const onInstalled = () => {
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+    };
+    window.addEventListener('beforeinstallprompt', onPrompt);
+    window.addEventListener('appinstalled', onInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onPrompt);
+      window.removeEventListener('appinstalled', onInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    playHoloTone('click');
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+    } else {
+      alert('To install: click the Install icon (⤓) in your browser address bar or use browser menu "Install Oil India Limited".');
+    }
+  };
 
   const canvasRef = useRef(null);
 
@@ -474,6 +510,21 @@ export default function EngineerAdminLogin({
             >
               <Film className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Intro Film</span>
+            </button>
+          )}
+
+          {!isInstalled && (
+            <button
+              onClick={handleInstallClick}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-bold uppercase transition-all cursor-pointer shadow-sm text-xs ${
+                darkMode
+                  ? 'border-amber-500/50 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 hover:shadow-[0_0_12px_rgba(245,158,11,0.4)]'
+                  : 'border-amber-400 bg-amber-100 hover:bg-amber-200 text-amber-900'
+              }`}
+              title="Install Oil India Limited App on Desktop or Phone"
+            >
+              <Download className="w-3.5 h-3.5 text-amber-400" />
+              <span>Install App</span>
             </button>
           )}
 
