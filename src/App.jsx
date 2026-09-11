@@ -612,7 +612,10 @@ function App() {
 
   // SCADA Industrial Safety Alarm Checker
   useEffect(() => {
-    if (!currentMetrics) return;
+    if (!isAuthenticated || !currentMetrics) {
+      setScadaAlert(null);
+      return;
+    }
     if (currentMetrics.rod_load && currentMetrics.rod_load > 13800) {
       setScadaAlert({
         type: 'danger',
@@ -628,7 +631,7 @@ function App() {
     } else {
       setScadaAlert(null);
     }
-  }, [currentMetrics, inputs.steam_T]);
+  }, [isAuthenticated, currentMetrics, inputs.steam_T]);
 
   // Handler for slider updates (Debounced to keep dragging butter smooth)
   const inputDebounceRef = useRef(null);
@@ -862,9 +865,8 @@ function App() {
     { id: 'upgrade', label: 'Modernization Hub', icon: Compass, desc: 'OIL portal architecture & roadmap' }
   ];
 
-    return (
-    <>
-      {showIntro && (
+    if (showIntro) {
+      return (
         <CinematicIntroPage
           onEnter={() => setShowIntro(false)}
           darkMode={darkMode}
@@ -873,25 +875,23 @@ function App() {
           currentMetrics={currentMetrics}
           connectionState={connectionState}
         />
-      )}
+      );
+    }
 
-      {!isAuthenticated && !showIntro && (
+    if (!isAuthenticated) {
+      return (
         <EngineerAdminLogin
           onLogin={handleLogin}
           darkMode={darkMode}
           onToggleTheme={() => setDarkMode(!darkMode)}
           onLaunchIntro={() => setShowIntro(true)}
         />
-      )}
+      );
+    }
 
+    return (
       <div
-        className={`h-screen w-full flex flex-col ${darkMode ? 'dark-theme bg-[#07080b] text-zinc-100' : 'light-theme bg-[#f4f6fb] text-slate-800'} dot-grid-bg overflow-hidden font-sans select-none transition-colors duration-300 relative ${!showIntro && isAuthenticated ? 'app-is-live' : ''}`}
-        style={!isAuthenticated ? {
-          display: 'none'
-        } : (showIntro ? {
-          opacity: 0,
-          pointerEvents: 'none'
-        } : undefined)}
+        className={`h-screen w-full flex flex-col ${darkMode ? 'dark-theme bg-[#07080b] text-zinc-100' : 'light-theme bg-[#f4f6fb] text-slate-800'} dot-grid-bg overflow-hidden font-sans select-none transition-colors duration-300 relative app-is-live`}
       >
               {/* Big Cinematic Floating Ambient Orbs (Constrained within viewport) */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -4009,7 +4009,6 @@ function App() {
       />
 
     </div>
-    </>
   );
 }
 

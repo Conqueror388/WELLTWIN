@@ -151,11 +151,16 @@ class RootErrorBoundary extends Component {
   }
 }
 
-createRoot(document.getElementById('root')).render(
+const rootElement = document.getElementById('root');
+if (!window.__oilRootInstance) {
+  window.__oilRootInstance = createRoot(rootElement);
+}
+
+window.__oilRootInstance.render(
   <StrictMode>
     <RootErrorBoundary>
       <App />
     </RootErrorBoundary>
   </StrictMode>,
-)
+);
 

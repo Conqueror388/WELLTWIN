@@ -268,8 +268,8 @@ export default function CinematicIntroPage({
     return () => {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animId);
-      if (container && renderer.domElement) {
-        container.innerHTML = '';
+      if (container && renderer.domElement && container.contains(renderer.domElement)) {
+        container.removeChild(renderer.domElement);
       }
       scene.traverse((obj) => {
         if (obj.geometry) obj.geometry.dispose();

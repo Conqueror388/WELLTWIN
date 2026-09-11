@@ -72,23 +72,24 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
     getXray: () => isXrayActiveRef.current
   }));
 
-  const [fallbackContainer] = useState(() => {
-    if (typeof document !== 'undefined') {
-      const div = document.createElement('div');
-      div.style.display = 'none';
-      document.body.appendChild(div);
-      return div;
-    }
-    return null;
-  });
+  const fallbackContainerRef = useRef(null);
+  if (!fallbackContainerRef.current && typeof document !== 'undefined') {
+    const div = document.createElement('div');
+    div.style.display = 'none';
+    fallbackContainerRef.current = div;
+  }
 
   useEffect(() => {
+    const div = fallbackContainerRef.current;
+    if (div && typeof document !== 'undefined' && !div.parentNode && document.body) {
+      document.body.appendChild(div);
+    }
     return () => {
-      if (fallbackContainer && fallbackContainer.parentNode) {
-        fallbackContainer.parentNode.removeChild(fallbackContainer);
+      if (div && div.parentNode) {
+        div.parentNode.removeChild(div);
       }
     };
-  }, [fallbackContainer]);
+  }, []);
 
   const [hoveredEquipment, setHoveredEquipment] = useState(null);
   const [selectedAsset, setSelectedAsset] = useState(null);
@@ -256,7 +257,9 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
     renderer.sortObjects = true;
 
     if (container) {
-      container.innerHTML = '';
+      if (renderer.domElement && container.contains(renderer.domElement)) {
+        container.removeChild(renderer.domElement);
+      }
       renderer.domElement.style.position = 'absolute';
       renderer.domElement.style.top = '0';
       renderer.domElement.style.left = '0';
@@ -1439,7 +1442,9 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
     const rndr = rendererRef.current;
     if (activeMount && rndr && rndr.domElement) {
       if (rndr.domElement.parentNode !== activeMount) {
-        activeMount.innerHTML = '';
+        if (rndr.domElement.parentNode) {
+          rndr.domElement.parentNode.removeChild(rndr.domElement);
+        }
         activeMount.appendChild(rndr.domElement);
       }
       rndr.domElement.style.position = 'absolute';
@@ -1464,7 +1469,7 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
     }
   }, [parentDOM, viewMode]);
 
-  const target = parentDOM || fallbackContainer;
+  const target = parentDOM || fallbackContainerRef.current;
   if (!target) return null;
 
   return createPortal(
