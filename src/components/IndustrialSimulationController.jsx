@@ -500,9 +500,9 @@ export default function IndustrialSimulationController({
             >
               {/* Top Row: Channel Tag, Status LED & Lock Toggle */}
               <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2 truncate">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   <span 
-                    className="px-2 py-0.5 rounded text-[11px] font-mono font-extrabold tracking-wider border shadow-sm flex items-center gap-1.5"
+                    className="px-2 py-0.5 rounded text-[11px] font-mono font-extrabold tracking-wider border shadow-sm flex items-center gap-1.5 shrink-0"
                     style={{ 
                       backgroundColor: `${channel.color}15`, 
                       borderColor: `${channel.color}40`, 
@@ -512,7 +512,7 @@ export default function IndustrialSimulationController({
                     <IconComponent className="w-3 h-3" />
                     {channel.tag}
                   </span>
-                  <span className="text-xs font-mono font-bold text-zinc-200 tracking-wider truncate uppercase">
+                  <span className="text-xs font-mono font-bold text-zinc-200 tracking-wide uppercase leading-tight">
                     {channel.label}
                   </span>
                 </div>

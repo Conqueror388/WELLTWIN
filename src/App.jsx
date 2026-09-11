@@ -287,6 +287,14 @@ function App() {
   const [showIntro, setShowIntro] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState('overview'); // Default to 'overview' upon login
+  const activeTabRef = useRef(null);
+
+  // Auto-scroll active navigation tab into center view on tab change
+  useEffect(() => {
+    if (activeTabRef.current) {
+      activeTabRef.current.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }, [activeTab]);
   const [selectedWell, setSelectedWell] = useState(INITIAL_WELLS[0]);
   const [dataMode, setDataMode] = useState('baseline'); // 'baseline' | 'historical' | 'synthetic'
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
@@ -904,11 +912,11 @@ function App() {
       <header className="header-stitch w-full z-40 flex-shrink-0 entrance-header">
         
         {/* Top Operational Bar */}
-        <div className={`px-6 py-2 flex items-center justify-between gap-3 border-b ${darkMode ? 'border-zinc-900/80 bg-[#07080b]' : 'border-slate-200/80 bg-white'}`}>
+        <div className={`px-2.5 sm:px-6 py-1.5 sm:py-2 flex items-center justify-between gap-1.5 sm:gap-3 border-b ${darkMode ? 'border-zinc-900/80 bg-[#07080b]' : 'border-slate-200/80 bg-white'}`}>
           
           {/* Brand & Field Controls */}
-          <div className="flex items-center gap-3.5 min-w-0 flex-shrink-0">
-            <div className={`px-3 py-1.5 rounded-2xl flex items-center justify-center shrink-0 transition-all ${
+          <div className="flex items-center gap-2 sm:gap-3.5 min-w-0 flex-shrink-0">
+            <div className={`px-1.5 py-1 sm:px-3 sm:py-1.5 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 transition-all ${
               darkMode 
                 ? 'bg-white shadow-[0_0_20px_rgba(255,255,255,0.35)] border-2 border-amber-400/80' 
                 : 'bg-white shadow-[0_4px_14px_rgba(15,23,42,0.12)] border-2 border-amber-500/80'
@@ -916,35 +924,40 @@ function App() {
               <img
                 src="/oil-india-logo.png"
                 alt="Oil India Limited Official Logo"
-                className="h-10 sm:h-11 w-auto object-contain flex-shrink-0 drop-shadow-sm"
+                className="h-8 sm:h-11 w-auto object-contain flex-shrink-0 drop-shadow-sm"
               />
             </div>
             <div className="flex-shrink-0">
-              <h1 className="text-base sm:text-lg font-black font-display tracking-widest text-white dark:text-white light:text-slate-950 uppercase leading-none whitespace-nowrap">
+              <h1 className="text-xs sm:text-base md:text-lg font-black font-display tracking-wider sm:tracking-widest text-white dark:text-white light:text-slate-950 uppercase leading-none whitespace-nowrap">
                 OIL INDIA LIMITED
               </h1>
-              <span className="text-[11px] sm:text-xs font-black font-mono tracking-wider mt-1 block text-amber-400 dark:text-amber-400 light:text-amber-800 leading-none whitespace-nowrap">
-                BAGHEWALA PLATFORM • CSS–SRP DIGITAL TWIN
+              <span className="text-[9px] sm:text-xs font-black font-mono tracking-tight sm:tracking-wider mt-0.5 sm:mt-1 block text-amber-400 dark:text-amber-400 light:text-amber-800 leading-none whitespace-nowrap">
+                <span className="hidden sm:inline">BAGHEWALA PLATFORM • </span>CSS–SRP DIGITAL TWIN
               </span>
             </div>
 
-            {/* Drilling Well Target */}
-            <div className={`hidden md:flex items-center gap-1.5 px-2.5 h-8 rounded-xl border ${
+            {/* Drilling Well Target - Visible on all devices */}
+            <div className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 h-7 sm:h-8 rounded-lg sm:rounded-xl border shrink-0 ${
               darkMode ? 'bg-zinc-950/80 border-zinc-800/80 text-zinc-300' : 'bg-slate-100 border-slate-300 text-slate-800'
             }`}>
-              <span className={`text-xs font-tactical font-bold uppercase ${darkMode ? 'text-zinc-400' : 'text-slate-600'}`}>Well:</span>
+              <span className={`text-[10px] sm:text-xs font-tactical font-bold uppercase ${darkMode ? 'text-zinc-400' : 'text-slate-600'}`}>
+                <span className="hidden sm:inline">Well:</span>
+                <span className="sm:hidden">W:</span>
+              </span>
               <select 
                 value={selectedWell.id}
                 onChange={(e) => {
                   const well = INITIAL_WELLS.find(w => w.id === e.target.value);
                   setSelectedWell(well);
                 }}
-                className={`bg-transparent text-xs font-mono font-bold outline-none cursor-pointer ${
+                className={`bg-transparent text-[10px] sm:text-xs font-mono font-bold outline-none cursor-pointer ${
                   darkMode ? 'text-white' : 'text-slate-900'
                 }`}
               >
                 {INITIAL_WELLS.map(well => (
-                  <option key={well.id} value={well.id} className={darkMode ? 'bg-zinc-900 text-white' : 'bg-white text-slate-900'}>{well.name}</option>
+                  <option key={well.id} value={well.id} className={darkMode ? 'bg-zinc-900 text-white' : 'bg-white text-slate-900'}>
+                    {well.id}
+                  </option>
                 ))}
               </select>
             </div>
@@ -985,7 +998,7 @@ function App() {
           </div>
 
           {/* Quick Tactical Controls */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             
             {/* Live SCADA Telemetry Toggle */}
             <button
@@ -995,15 +1008,16 @@ function App() {
                 playHoloSound('tab');
                 showToast(next ? 'Live SCADA telemetry stream active.' : 'Switched to static baseline telemetry.');
               }}
-              className={`flex items-center gap-1.5 px-2.5 h-8 rounded-xl text-xs font-mono font-bold border transition-all cursor-pointer ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 h-7 sm:h-8 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-mono font-bold border transition-all cursor-pointer ${
                 liveScada
                   ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.3)]'
                   : 'bg-zinc-950/80 text-zinc-400 border-zinc-800 hover:text-zinc-200'
               }`}
               title={liveScada ? 'Pause simulated sensor stream' : 'Stream real-time SCADA telemetry'}
             >
-              <span className={`w-2 h-2 rounded-full ${liveScada ? 'bg-amber-400 beacon-pulse' : 'bg-zinc-600'}`} />
-              <span>{liveScada ? 'STREAM LIVE' : 'SCADA STATIC'}</span>
+              <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${liveScada ? 'bg-amber-400 beacon-pulse' : 'bg-zinc-600'}`} />
+              <span className="hidden sm:inline">{liveScada ? 'STREAM LIVE' : 'SCADA STATIC'}</span>
+              <span className="sm:hidden">{liveScada ? 'LIVE' : 'STATIC'}</span>
               <span className="hidden xl:inline text-zinc-700">|</span>
               <span className="hidden xl:inline text-amber-400"><Clock /></span>
             </button>
@@ -1039,14 +1053,14 @@ function App() {
             {!isAppInstalled && (
               <button
                 onClick={handleInstallApp}
-                className={`flex items-center gap-1.5 px-3 h-8 border rounded-xl text-xs font-tactical font-bold uppercase transition-all cursor-pointer shadow-sm ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 h-7 sm:h-8 border rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-tactical font-bold uppercase transition-all cursor-pointer shadow-sm ${
                   darkMode
                     ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-500/50 hover:shadow-[0_0_12px_rgba(245,158,11,0.4)]'
                     : 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-400 shadow-sm'
                 }`}
                 title="Install Oil India Limited Digital Twin as an App"
               >
-                <Download className="w-3.5 h-3.5 text-amber-400" />
+                <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400" />
                 <span className="hidden sm:inline">Install App</span>
                 <span className="sm:hidden">Install</span>
               </button>
@@ -1055,28 +1069,28 @@ function App() {
             {/* Theme Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className={`w-8 h-8 rounded-xl border transition-colors cursor-pointer flex items-center justify-center flex-shrink-0 ${
+              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl border transition-colors cursor-pointer flex items-center justify-center flex-shrink-0 ${
                 darkMode
                   ? 'border-zinc-800 hover:bg-zinc-800 text-amber-400 hover:text-amber-300'
                   : 'border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-800 hover:text-amber-700'
               }`}
               title="Toggle Theme"
             >
-              {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+              {darkMode ? <Sun className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <Moon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
             </button>
 
             {/* Settings Dropdown */}
             <div className="relative flex-shrink-0">
               <button
                 onClick={() => setShowSettingsMenu(s => !s)}
-                className={`w-8 h-8 rounded-xl border transition-all cursor-pointer flex items-center justify-center flex-shrink-0 ${
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl border transition-all cursor-pointer flex items-center justify-center flex-shrink-0 ${
                   darkMode
                     ? 'border-zinc-800 hover:bg-zinc-800 text-zinc-400 hover:text-white'
                     : 'border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900'
                 }`}
                 title="System Preferences & 3D Quality"
               >
-                <Settings className="w-3.5 h-3.5" />
+                <Settings className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </button>
               {showSettingsMenu && (
                 <div className={`absolute right-0 mt-2 w-72 rounded-2xl p-4 shadow-2xl z-50 text-xs font-sans border ${
@@ -1127,14 +1141,14 @@ function App() {
             <div className="relative flex-shrink-0">
               <button
                 onClick={() => setShowUserMenu(u => !u)}
-                className={`flex items-center gap-2 px-2.5 h-8 rounded-xl border transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-2.5 h-7 sm:h-8 rounded-lg sm:rounded-xl border transition-all cursor-pointer ${
                   darkMode 
                     ? 'bg-zinc-900/90 border-amber-500/30 hover:border-amber-500/60 text-zinc-100 hover:bg-zinc-800/80' 
                     : 'bg-white border-amber-500/40 hover:border-amber-500/80 text-slate-800 hover:bg-amber-50/50 shadow-sm'
                 }`}
                 title={`Clearance: ${currentUser?.clearance || 'LVL-4'} • ${currentUser?.name}`}
               >
-                <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-amber-500 to-amber-300 text-zinc-950 font-black text-[11px] flex items-center justify-center shadow-[0_0_8px_rgba(245,158,11,0.4)] flex-shrink-0">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-md sm:rounded-lg bg-gradient-to-tr from-amber-500 to-amber-300 text-zinc-950 font-black text-[10px] sm:text-[11px] flex items-center justify-center shadow-[0_0_8px_rgba(245,158,11,0.4)] flex-shrink-0">
                     {currentUser?.name ? currentUser.name.split(' ').map(n => n[0]).join('').slice(0, 2) : 'EN'}
                   </div>
                   <div className="hidden md:flex flex-col text-left leading-none">
@@ -1148,7 +1162,7 @@ function App() {
                       {currentUser?.badgeId || 'OIL-ENG-9042'}
                     </span>
                   </div>
-                  <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+                  <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-zinc-400" />
                 </button>
 
                 {showUserMenu && (
@@ -1241,25 +1255,32 @@ function App() {
         </div>
 
         {/* Horizontal Navigation Tabs Strip */}
-        <nav className={`w-full px-4 flex items-center gap-1 overflow-x-auto no-scrollbar ${darkMode ? 'bg-[#090b10]/95' : 'bg-slate-100/90 border-t border-slate-200/60'}`}>
-          {menuItems.map((item, idx) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setSelectedAsset(null);
-                }}
-                className={`tab-btn-stitch flex items-center gap-2 px-4.5 py-2.5 text-sm sm:text-base font-bold whitespace-nowrap cursor-pointer rounded-t-lg entrance-tab stagger-d${Math.min(idx, 12)} ${isActive ? 'active' : 'text-zinc-200 dark:text-zinc-200 light:text-slate-700 hover:text-zinc-200 hover:bg-white/[0.03]'}`}
-              >
-                <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]' : 'text-zinc-300 dark:text-zinc-300 light:text-slate-600'}`} />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+        <div className="relative w-full overflow-hidden">
+          {/* Subtle gradient cues indicating scrollability on mobile */}
+          <div className={`absolute left-0 top-0 bottom-0 w-4 z-10 pointer-events-none bg-gradient-to-r ${darkMode ? 'from-[#090b10] to-transparent' : 'from-slate-100 to-transparent'}`} />
+          <div className={`absolute right-0 top-0 bottom-0 w-4 z-10 pointer-events-none bg-gradient-to-l ${darkMode ? 'from-[#090b10] to-transparent' : 'from-slate-100 to-transparent'}`} />
+          
+          <nav className={`w-full px-2 sm:px-4 flex items-center gap-1 overflow-x-auto no-scrollbar scroll-smooth ${darkMode ? 'bg-[#090b10]/95' : 'bg-slate-100/90 border-t border-slate-200/60'}`}>
+            {menuItems.map((item, idx) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  ref={isActive ? activeTabRef : null}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setSelectedAsset(null);
+                  }}
+                  className={`tab-btn-stitch flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4.5 py-2 sm:py-2.5 text-xs sm:text-sm md:text-base font-bold whitespace-nowrap cursor-pointer rounded-t-lg shrink-0 entrance-tab stagger-d${Math.min(idx, 12)} ${isActive ? 'active' : 'text-zinc-200 dark:text-zinc-200 light:text-slate-700 hover:text-zinc-200 hover:bg-white/[0.03]'}`}
+                >
+                  <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 ${isActive ? 'text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]' : 'text-zinc-300 dark:text-zinc-300 light:text-slate-600'}`} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
       </header>
 
       {/* Dynamic Laser Scanline Sweeping Beam across UI */}
@@ -2187,7 +2208,7 @@ function App() {
           }`}>
             
             {/* Floating controls on top-right: Exploded / X-Ray Inspection + Camera Reset */}
-            <div key={`twin-ctrl-${activeTab}`} className="absolute top-4 right-4 z-20 pointer-events-auto slide-edge-right stagger-2 flex items-center gap-2">
+            <div key={`twin-ctrl-${activeTab}`} className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 pointer-events-auto slide-edge-right stagger-2 flex items-center gap-1.5 sm:gap-2">
               <button
                 onClick={() => {
                   const next = !xrayExploded;
@@ -2196,7 +2217,7 @@ function App() {
                     threeDWorkspaceRef.current.setXray(next);
                   }
                 }}
-                className={`px-3.5 py-2 rounded-2xl shadow-xl backdrop-blur-xl transition-all cursor-pointer font-sans font-bold text-xs min-h-[38px] flex items-center gap-2 border ${
+                className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl shadow-xl backdrop-blur-xl transition-all cursor-pointer font-sans font-bold text-[11px] sm:text-xs min-h-[32px] sm:min-h-[38px] flex items-center gap-1.5 sm:gap-2 border ${
                   xrayExploded
                     ? 'bg-amber-500 text-zinc-950 border-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.5)] font-black'
                     : darkMode
@@ -2205,22 +2226,23 @@ function App() {
                 }`}
                 title="Slide open casing, pump barrel, ball valves, and stuffing box seals"
               >
-                <svg className={`w-4 h-4 ${xrayExploded ? 'animate-pulse' : 'text-amber-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${xrayExploded ? 'animate-pulse' : 'text-amber-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
-                <span>{xrayExploded ? 'Exploded X-Ray: ON' : 'Exploded / X-Ray Mode'}</span>
+                <span className="hidden sm:inline">{xrayExploded ? 'Exploded X-Ray: ON' : 'Exploded / X-Ray Mode'}</span>
+                <span className="sm:hidden">{xrayExploded ? 'X-Ray ON' : 'X-Ray'}</span>
               </button>
 
               {/* Zoom In & Zoom Out Quick Buttons */}
-              <div className={`flex items-center rounded-2xl shadow-xl backdrop-blur-xl border p-0.5 ${
+              <div className={`flex items-center rounded-xl sm:rounded-2xl shadow-xl backdrop-blur-xl border p-0.5 ${
                 darkMode ? 'bg-zinc-950/90 border-zinc-800/80' : 'bg-white/95 border-slate-300'
               }`}>
                 <button
                   onClick={() => {
                     if (threeDWorkspaceRef.current?.zoomIn) threeDWorkspaceRef.current.zoomIn();
                   }}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center font-mono font-bold text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center font-mono font-bold text-xs sm:text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
                   title="Zoom In 3D Scene"
                 >
                   +
@@ -2229,7 +2251,7 @@ function App() {
                   onClick={() => {
                     if (threeDWorkspaceRef.current?.zoomOut) threeDWorkspaceRef.current.zoomOut();
                   }}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center font-mono font-bold text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center font-mono font-bold text-xs sm:text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
                   title="Zoom Out 3D Scene"
                 >
                   −
@@ -2243,11 +2265,12 @@ function App() {
                     threeDWorkspaceRef.current.resetCamera();
                   }
                 }}
-                className={`px-4 py-2 rounded-2xl shadow-xl backdrop-blur-xl transition-all cursor-pointer font-sans font-bold text-xs min-h-[38px] border ${
+                className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl shadow-xl backdrop-blur-xl transition-all cursor-pointer font-sans font-bold text-[11px] sm:text-xs min-h-[32px] sm:min-h-[38px] border ${
                   darkMode ? 'bg-zinc-950/90 border-zinc-800/80 text-zinc-200 hover:text-white hover:border-amber-500/50' : 'bg-white/95 border-slate-300 text-slate-800 shadow-md hover:border-amber-500'
                 }`}
               >
-                Restore Default View
+                <span className="hidden sm:inline">Restore Default View</span>
+                <span className="sm:hidden">Reset View</span>
               </button>
             </div>
 

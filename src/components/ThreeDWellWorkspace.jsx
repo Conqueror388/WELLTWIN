@@ -1476,7 +1476,7 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
     <div ref={mountRef} className={`absolute inset-0 w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing ${darkMode ? 'bg-[#080b13]' : 'bg-[#eef2f6]'}`}>
       
       {/* Dynamic 3D Scene Status HUD Overlay */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none font-sans select-none">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none font-sans select-none hidden sm:flex">
         {!illustrativeMode ? (
           <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs uppercase tracking-widest shadow-lg border ${
             darkMode ? 'bg-zinc-950/95 border-amber-500/40 text-amber-400' : 'bg-amber-50 border-amber-300 text-amber-800'

@@ -252,8 +252,8 @@ export default function AIWhatIfOptimizer({
               {oilDelta >= 0 ? `+${oilDelta}%` : `${oilDelta}%`}
             </span>
           </div>
-          <div className="flex items-baseline gap-2">
-            <strong className="text-2xl font-mono font-bold text-white">
+          <div className="flex items-baseline gap-1.5 flex-wrap">
+            <strong className="text-xl sm:text-2xl font-mono font-bold text-white">
               {currentScenario.oilYield}
             </strong>
             <span className="text-xs font-mono text-zinc-400">bbl/d</span>
@@ -277,8 +277,8 @@ export default function AIWhatIfOptimizer({
               {steamDelta}% Steam
             </span>
           </div>
-          <div className="flex items-baseline gap-2">
-            <strong className="text-2xl font-mono font-bold text-amber-400">
+          <div className="flex items-baseline gap-1.5 flex-wrap">
+            <strong className="text-xl sm:text-2xl font-mono font-bold text-amber-400">
               {currentScenario.steamVolume}
             </strong>
             <span className="text-xs font-mono text-zinc-400">m³/cycle</span>
@@ -299,8 +299,8 @@ export default function AIWhatIfOptimizer({
               Optimum Fill
             </span>
           </div>
-          <div className="flex items-baseline gap-2">
-            <strong className="text-2xl font-mono font-bold text-white">
+          <div className="flex items-baseline gap-1.5 flex-wrap">
+            <strong className="text-xl sm:text-2xl font-mono font-bold text-white">
               {currentScenario.spm}
             </strong>
             <span className="text-xs font-mono text-zinc-400">SPM @ {currentScenario.stroke}"</span>
@@ -321,11 +321,11 @@ export default function AIWhatIfOptimizer({
               +₹15.45L/mo
             </span>
           </div>
-          <div className="flex items-baseline gap-2">
-            <strong className="text-2xl font-mono font-bold text-emerald-400">
+          <div className="flex items-baseline gap-1 flex-wrap">
+            <strong className="text-lg sm:text-2xl font-mono font-bold text-emerald-400">
               ₹{currentScenario.netMargin.toLocaleString('en-IN')}
             </strong>
-            <span className="text-xs font-mono text-zinc-400">/month</span>
+            <span className="text-[11px] sm:text-xs font-mono text-zinc-400">/mo</span>
           </div>
           <div className="flex justify-between items-center text-[11px] font-mono text-zinc-400 border-t border-zinc-800/50 pt-1.5">
             <span>NPV Impact</span>

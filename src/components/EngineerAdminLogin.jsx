@@ -679,18 +679,18 @@ export default function EngineerAdminLogin({
               <form onSubmit={handleOfficialSignIn} className="space-y-4">
                 
                 {/* Fast-Track Demo Chip for Evaluators */}
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30">
-                  <div className="flex items-center gap-2.5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                    <div>
+                    <div className="min-w-0">
                       <span className="text-xs font-bold text-white block">Official Field Lead Pass:</span>
-                      <span className="text-[11px] font-mono text-zinc-400">Dr. Rajesh Sharma (OIL-PE-8842)</span>
+                      <span className="text-[11px] font-mono text-zinc-400 truncate block">Dr. Rajesh Sharma (OIL-PE-8842)</span>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={handleUseDemoCredentials}
-                    className="px-3 py-1 bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-mono font-bold rounded-lg cursor-pointer transition-all shadow-sm"
+                    className="self-end sm:self-auto px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-mono font-bold rounded-lg cursor-pointer transition-all shadow-sm shrink-0"
                   >
                     Use Lead Pass
                   </button>
