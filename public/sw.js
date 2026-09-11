@@ -1,10 +1,10 @@
-﻿// Service Worker for Oil India Limited Digital Twin PWA
-const CACHE_NAME = 'oil-twin-cache-v1';
-const PRECACHE_URLS = ['/', '/index.html', '/oil-india-logo.png', '/manifest.json'];
+// Service Worker for Oil India Limited Digital Twin PWA
+const CACHE_NAME = 'oil-twin-cache-v2';
+const STATIC_ASSETS = ['/oil-india-logo.png', '/app-icon.svg', '/manifest.json'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)).then(() => self.skipWaiting())
   );
 });
 
@@ -18,9 +18,34 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+
+  // Network-first for navigation requests (HTML pages) so user always gets the latest bundle hashes
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request).then((cached) => cached || caches.match('/')))
+    );
+    return;
+  }
+
+  // For JS modules and assets: never fallback to HTML (prevents MIME type error)
+  if (url.pathname.startsWith('/assets/') || url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Cache-first fallback for static branding assets (icons, logo)
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).catch(() => caches.match('/index.html'));
-    })
+    caches.match(event.request).then((cached) => cached || fetch(event.request))
   );
 });
