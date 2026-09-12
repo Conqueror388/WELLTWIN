@@ -1049,6 +1049,22 @@ function App() {
               Intro
             </button>
 
+            {/* Competition Defense Guide & Jury Q&A Dossier */}
+            <a 
+              href="/competition-defense-guide.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`hidden sm:flex items-center gap-1.5 px-2.5 h-7 sm:h-8 border rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-tactical font-bold uppercase transition-all cursor-pointer shadow-sm text-decoration-none ${
+                darkMode
+                  ? 'bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border-blue-500/40 hover:shadow-[0_0_12px_rgba(59,130,246,0.3)]'
+                  : 'bg-blue-50 hover:bg-blue-100 text-blue-800 border-blue-300 shadow-sm'
+              }`}
+              title="Open Competition Master Defense Guide & Jury Q&A (Printable PDF)"
+            >
+              <BookOpen className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-400" />
+              <span>Dossier PDF</span>
+            </a>
+
             {/* Install App Button */}
             {!isAppInstalled && (
               <button
@@ -1849,13 +1865,25 @@ function App() {
                       </p>
                     </div>
 
-                    <button
-                      onClick={() => setShowExecutiveDossier(true)}
-                      className="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-sans font-bold text-xs flex items-center gap-2 transition-all shadow-xl shadow-amber-500/25 flex-shrink-0 cursor-pointer"
-                    >
-                      <FileCheck className="w-4 h-4" />
-                      <span>Generate Official Dossier (PDF)</span>
-                    </button>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <button
+                        onClick={() => setShowExecutiveDossier(true)}
+                        className="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-sans font-bold text-xs flex items-center gap-2 transition-all shadow-xl shadow-amber-500/25 flex-shrink-0 cursor-pointer"
+                      >
+                        <FileCheck className="w-4 h-4" />
+                        <span>Generate Operational Dossier (PDF)</span>
+                      </button>
+
+                      <a
+                        href="/competition-defense-guide.html"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-sans font-bold text-xs flex items-center gap-2 transition-all shadow-xl shadow-blue-500/25 flex-shrink-0 cursor-pointer text-decoration-none"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        <span>Master Competition Defense Guide & Jury Q&A (PDF)</span>
+                      </a>
+                    </div>
                   </div>
 
                   <div>
