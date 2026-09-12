@@ -1,5 +1,5 @@
 // Service Worker for Oil India Limited Digital Twin PWA
-const CACHE_NAME = 'oil-twin-cache-v5';
+const CACHE_NAME = 'oil-twin-cache-v6';
 const STATIC_ASSETS = [
   '/oil-india-logo.png',
   '/pwa-192x192.png',
@@ -7,8 +7,7 @@ const STATIC_ASSETS = [
   '/pwa-maskable-512x512.png',
   '/apple-touch-icon.png',
   '/favicon-32x32.png',
-  '/manifest.json',
-  '/competition-defense-guide.html'
+  '/manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
