@@ -263,11 +263,21 @@ function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState('overview'); // Default to 'overview' upon login
   const activeTabRef = useRef(null);
+  const navContainerRef = useRef(null);
 
-  // Auto-scroll active navigation tab into center view on tab change
+  // Auto-scroll active navigation tab into center view within the nav bar only (prevents viewport shifting)
   useEffect(() => {
-    if (activeTabRef.current) {
-      activeTabRef.current.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    if (activeTabRef.current && navContainerRef.current) {
+      const nav = navContainerRef.current;
+      const tab = activeTabRef.current;
+      const targetLeft = tab.offsetLeft - (nav.clientWidth / 2) + (tab.clientWidth / 2);
+      nav.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
+    }
+    // Guarantee window and html document never scroll sideways
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ left: 0, top: window.scrollY });
+      document.documentElement.scrollLeft = 0;
+      if (document.body) document.body.scrollLeft = 0;
     }
   }, [activeTab]);
   const [selectedWell, setSelectedWell] = useState(INITIAL_WELLS[0]);
@@ -1254,7 +1264,7 @@ function App() {
           <div className={`absolute left-0 top-0 bottom-0 w-4 z-10 pointer-events-none bg-gradient-to-r ${darkMode ? 'from-[#090b10] to-transparent' : 'from-slate-100 to-transparent'}`} />
           <div className={`absolute right-0 top-0 bottom-0 w-4 z-10 pointer-events-none bg-gradient-to-l ${darkMode ? 'from-[#090b10] to-transparent' : 'from-slate-100 to-transparent'}`} />
           
-          <nav className={`w-full px-2 sm:px-4 flex items-center gap-1 overflow-x-auto no-scrollbar scroll-smooth ${darkMode ? 'bg-[#090b10]/95' : 'bg-slate-100/90 border-t border-slate-200/60'}`}>
+          <nav ref={navContainerRef} className={`w-full px-2 sm:px-4 flex items-center gap-1 overflow-x-auto no-scrollbar scroll-smooth ${darkMode ? 'bg-[#090b10]/95' : 'bg-slate-100/90 border-t border-slate-200/60'}`}>
             {menuItems.map((item, idx) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -3677,7 +3687,7 @@ function App() {
 
         {/* PAGE 8: DATA SOURCES */}
         {activeTab === 'datasources' && (
-          <div className="space-y-6 page-transition-wrap">
+          <div className="space-y-6 page-transition-wrap w-full max-w-7xl mx-auto">
             
             {/* Disclaimer Notice Banner */}
             <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 p-4 rounded-2xl flex items-center gap-3 text-xs font-mono slide-edge-top">
@@ -3687,7 +3697,7 @@ function App() {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch min-h-[calc(100vh-190px)]">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch min-h-[calc(100vh-190px)]">
               
               {/* Left Column: Calibration & Comparison (lg:col-span-8) */}
               <div className="lg:col-span-8 glass-panel p-5 flex flex-col justify-between gap-8 slide-edge-left stagger-2">
