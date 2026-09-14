@@ -118,11 +118,7 @@ export default function AIWhatIfOptimizer({
               <h3 className="text-sm font-bold tracking-wider uppercase font-tactical text-amber-400">
                 Live "What-If" AI Optimizer & Machinery Health
               </h3>
-              <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
-                <span className="relative flex h-2 w-2">
-                  <span className="radar-sonar-ring bg-emerald-400" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
+              <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                 NSGA-II Knee-Point
               </span>
             </div>
@@ -150,15 +146,12 @@ export default function AIWhatIfOptimizer({
             </button>
             <button
               onClick={() => { setOptimizerMode('ab'); setActivePreset('pareto'); }}
-              className={`px-2.5 py-1 text-xs font-mono font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 relative overflow-hidden ${
+              className={`px-2.5 py-1 text-xs font-mono font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
                 optimizerMode === 'ab' && activePreset === 'pareto'
-                  ? 'bg-amber-500 text-zinc-950 shadow-[0_0_20px_rgba(245,158,11,0.6)] font-black ring-1 ring-amber-300'
+                  ? 'bg-amber-500 text-zinc-950 shadow-md font-black'
                   : 'text-amber-400 hover:text-amber-300'
               }`}
             >
-              {optimizerMode === 'ab' && activePreset === 'pareto' && (
-                <span className="absolute inset-0 bg-white/20 animate-pulse pointer-events-none" />
-              )}
               <Zap className="w-3 h-3" />
               <span>AI Pareto (B)</span>
             </button>
@@ -247,9 +240,9 @@ export default function AIWhatIfOptimizer({
       {/* ── 3. Four Core Delta KPI Comparison Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 p-4">
         {/* Metric 1: Net Oil Yield */}
-        <div className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2 transition-all duration-300 ${
+        <div className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2 transition-all ${
           darkMode ? 'bg-zinc-900/70 border-zinc-800/80' : 'bg-slate-50 border-slate-200'
-        } ${effectiveRatio > 0.5 ? 'border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/30' : ''}`}>
+        }`}>
           <div className="flex justify-between items-center text-xs font-mono">
             <span className="text-zinc-400 uppercase font-bold">Net Oil Yield</span>
             <span className={`px-1.5 py-0.5 rounded text-[11px] font-bold flex items-center gap-0.5 ${
@@ -272,9 +265,9 @@ export default function AIWhatIfOptimizer({
         </div>
 
         {/* Metric 2: Steam Consumption */}
-        <div className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2 transition-all duration-300 ${
+        <div className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2 transition-all ${
           darkMode ? 'bg-zinc-900/70 border-zinc-800/80' : 'bg-slate-50 border-slate-200'
-        } ${effectiveRatio > 0.5 ? 'border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/30' : ''}`}>
+        }`}>
           <div className="flex justify-between items-center text-xs font-mono">
             <span className="text-zinc-400 uppercase font-bold">Steam Energy Rate</span>
             <span className={`px-1.5 py-0.5 rounded text-[11px] font-bold flex items-center gap-0.5 ${
@@ -297,9 +290,9 @@ export default function AIWhatIfOptimizer({
         </div>
 
         {/* Metric 3: Pumping Speed & Stroke */}
-        <div className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2 transition-all duration-300 ${
+        <div className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2 transition-all ${
           darkMode ? 'bg-zinc-900/70 border-zinc-800/80' : 'bg-slate-50 border-slate-200'
-        } ${effectiveRatio > 0.5 ? 'border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/30' : ''}`}>
+        }`}>
           <div className="flex justify-between items-center text-xs font-mono">
             <span className="text-zinc-400 uppercase font-bold">SRP Kinematics</span>
             <span className="text-[11px] font-bold text-sky-400 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20">
@@ -319,9 +312,9 @@ export default function AIWhatIfOptimizer({
         </div>
 
         {/* Metric 4: Projected Net Margin */}
-        <div className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2 transition-all duration-300 ${
+        <div className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2 transition-all ${
           darkMode ? 'bg-zinc-900/70 border-zinc-800/80' : 'bg-slate-50 border-slate-200'
-        } ${effectiveRatio > 0.5 ? 'border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/30' : ''}`}>
+        }`}>
           <div className="flex justify-between items-center text-xs font-mono">
             <span className="text-zinc-400 uppercase font-bold">Net Well Margin</span>
             <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
