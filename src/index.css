@@ -1409,8 +1409,6 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .glass-panel, .tectonic-glass-card, .premium-card {
-  transform: translateZ(0);
-  will-change: transform;
   contain: paint layout;
 }
 

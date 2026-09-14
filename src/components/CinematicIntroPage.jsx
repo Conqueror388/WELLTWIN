@@ -173,6 +173,7 @@ export default function CinematicIntroPage({
     let clock = new THREE.Clock();
     let animId;
     let lastTime = performance.now();
+    let lastPct = -1;
 
     const animate = (now) => {
       animId = requestAnimationFrame(animate);
@@ -214,8 +215,11 @@ export default function CinematicIntroPage({
       // Fluid Camera Progression
       camera.position.z = 32 - p * 20;
       camera.position.y = Math.sin(time * 0.2) * 0.3 - p * 1.2;
-      camera.fov = 45 + p * 8;
-      camera.updateProjectionMatrix();
+      const targetFov = 45 + p * 8;
+      if (Math.abs(camera.fov - targetFov) > 0.05) {
+        camera.fov = targetFov;
+        camera.updateProjectionMatrix();
+      }
 
       // UI Transitions - 2-3 contrast color architecture
       const translateY = -p * 28;
@@ -231,15 +235,18 @@ export default function CinematicIntroPage({
         titleBoxRef.current.style.opacity = textOp.toFixed(3);
       }
 
-      if (progressBarRef.current) {
-        progressBarRef.current.style.width = `${(p * 100).toFixed(1)}%`;
-      }
-
-      if (scrollPillRef.current) {
-        if (p > 0.03) {
-          scrollPillRef.current.textContent = `SYNCHRONIZING DIGITAL TWIN: ${Math.round(p * 100)}%`;
-        } else {
-          scrollPillRef.current.textContent = 'INITIALIZING SYSTEM • SCROLL TO ACCELERATE';
+      const pct = Math.round(p * 100);
+      if (pct !== lastPct) {
+        lastPct = pct;
+        if (progressBarRef.current) {
+          progressBarRef.current.style.width = `${pct}%`;
+        }
+        if (scrollPillRef.current) {
+          if (p > 0.03) {
+            scrollPillRef.current.textContent = `SYNCHRONIZING DIGITAL TWIN: ${pct}%`;
+          } else {
+            scrollPillRef.current.textContent = 'INITIALIZING SYSTEM • SCROLL TO ACCELERATE';
+          }
         }
       }
 
@@ -524,7 +531,7 @@ export default function CinematicIntroPage({
           }`}>
             <div
               ref={progressBarRef}
-              className="h-full bg-amber-500 transition-all duration-75"
+              className="h-full bg-amber-500"
               style={{ width: '0%' }}
             />
           </div>

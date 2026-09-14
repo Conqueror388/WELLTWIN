@@ -507,7 +507,7 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
     // 1. Separator Internal 3-Phase Working Vortex (Gas Bubbles + Oil Spillover + Water Settle)
     const sepWorkingGroup = new THREE.Group();
     sepWorkingGroup.position.set(16, 7, -5);
-    masterGroup.add(sepWorkingGroup);
+    surfaceGroup.add(sepWorkingGroup);
 
     const sepBubbles = [];
     const sepBubbleGeo = new THREE.SphereGeometry(0.12, 6, 6);
@@ -524,7 +524,7 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
     // 2. Steam Boiler Internal Helical Superheated Steam Coil & Burner Fire Vortex
     const boilerWorkingGroup = new THREE.Group();
     boilerWorkingGroup.position.set(-16, 4.5, -15);
-    masterGroup.add(boilerWorkingGroup);
+    surfaceGroup.add(boilerWorkingGroup);
 
     const boilerCoilParticles = [];
     const bCoilGeo = new THREE.SphereGeometry(0.15, 6, 6);
@@ -585,7 +585,7 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
 
     // Overhaul Pipelines: Steam (insulated) and Oil (layered fluid system)
     const pipelineGroup = new THREE.Group(); 
-    masterGroup.add(pipelineGroup);
+    surfaceGroup.add(pipelineGroup);
 
     // ── Steam injection: Boiler → Injection wellhead (insulated, high-temp)
     buildDetailedPipe(new THREE.Vector3(-16, 4.5, -15), new THREE.Vector3(-16, 4.5, 0),  m.steamInjectionPipeMat, pipelineGroup, m, true);
@@ -593,7 +593,7 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
 
     // ── Oil production: full layered fluid pipe system ─────────────────────
     const fluidGroup = new THREE.Group(); 
-    masterGroup.add(fluidGroup);
+    surfaceGroup.add(fluidGroup);
     const fluidRegistry = [];
     fluidRegistryRef.current = fluidRegistry;
 
@@ -1113,8 +1113,10 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
       const vel = isFlowing ? flowVelocityRef.current : 0;
       const showDir = showFlowDirRef.current;
 
-      if (flowVelTextRef.current) flowVelTextRef.current.textContent = `${(vel * 100).toFixed(1)}%`;
-      if (flowVelBarRef.current) flowVelBarRef.current.style.width = `${(vel * 100).toFixed(1)}%`;
+      if (frameCount % 6 === 0) {
+        if (flowVelTextRef.current) flowVelTextRef.current.textContent = `${(vel * 100).toFixed(1)}%`;
+        if (flowVelBarRef.current) flowVelBarRef.current.style.width = `${(vel * 100).toFixed(1)}%`;
+      }
 
       // Rapid steam flow inside pipeline
       steamFlowParticles.forEach((dot, idx) => {
@@ -1289,14 +1291,16 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
       // E. Reservoir Geological Flow Vectors (Clean refined lengths)
       if (reservoirArrows) {
         reservoirArrows.visible = showSubsurfaceOilFlowRef.current;
-        steamArrows.forEach((arr, idx) => {
-          const pulse = 1.6 + Math.sin(time * 6 + idx) * 0.5;
-          arr.setLength(pulse, 0.5, 0.25);
-        });
-        oilArrows.forEach((arr, idx) => {
-          const pulse = 1.8 + Math.cos(time * 5 + idx) * 0.6;
-          arr.setLength(pulse, 0.5, 0.25);
-        });
+        if (showSubsurfaceOilFlowRef.current && frameCount % 3 === 0) {
+          steamArrows.forEach((arr, idx) => {
+            const pulse = 1.6 + Math.sin(time * 6 + idx) * 0.5;
+            arr.setLength(pulse, 0.5, 0.25);
+          });
+          oilArrows.forEach((arr, idx) => {
+            const pulse = 1.8 + Math.cos(time * 5 + idx) * 0.6;
+            arr.setLength(pulse, 0.5, 0.25);
+          });
+        }
       }
       // ────────────────────────────────────────────────────────────────────────
 
@@ -1459,16 +1463,8 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
     }
     if (resizeRef.current) {
       resizeRef.current();
-      const t1 = setTimeout(resizeRef.current, 10);
-      const t2 = setTimeout(resizeRef.current, 50);
-      const t3 = setTimeout(resizeRef.current, 150);
-      const t4 = setTimeout(resizeRef.current, 350);
-      return () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
-        clearTimeout(t3);
-        clearTimeout(t4);
-      };
+      const rafId = requestAnimationFrame(resizeRef.current);
+      return () => cancelAnimationFrame(rafId);
     }
   }, [parentDOM, viewMode]);
 

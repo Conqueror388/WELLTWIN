@@ -25,7 +25,7 @@ function LazyChart(props) {
   );
 }
 
-export default function DynamicViscositySensitivityEngine({ inputs = {}, darkMode = true }) {
+function DynamicViscositySensitivityEngine({ inputs = {}, darkMode = true }) {
   const steamT = parseFloat(inputs.steam_T) || 220;
   const soakDays = parseFloat(inputs.soak_duration) || 5;
   const injPressure = parseFloat(inputs.injection_pressure) || 850;
@@ -74,6 +74,70 @@ export default function DynamicViscositySensitivityEngine({ inputs = {}, darkMod
     };
   }, [steamT, soakDays, injPressure, spm]);
 
+  const chartOption = useMemo(() => ({
+    backgroundColor: 'transparent',
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: darkMode ? 'rgba(10, 13, 20, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+      borderColor: '#f59e0b',
+      textStyle: { color: darkMode ? '#f8fafc' : '#0f172a', fontFamily: 'monospace', fontSize: 12 },
+      formatter: (params) => {
+        const pt = params[0]?.data;
+        if (!pt) return '';
+        return `Temperature: <b>${pt[0]} °C</b><br/>Crude Viscosity: <b style="color:#38bdf8;">${pt[1].toLocaleString()} cP</b>`;
+      }
+    },
+    grid: { top: 20, bottom: 30, left: 60, right: 30 },
+    xAxis: {
+      type: 'value',
+      name: '°C',
+      min: 40,
+      max: 350,
+      axisLabel: { color: darkMode ? '#94a3b8' : '#475569', fontFamily: 'monospace', fontSize: 11 },
+      splitLine: { lineStyle: { color: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)' } }
+    },
+    yAxis: {
+      type: 'log',
+      name: 'cP (Log Scale)',
+      min: 50,
+      max: 15000,
+      axisLabel: { color: darkMode ? '#94a3b8' : '#475569', fontFamily: 'monospace', fontSize: 11 },
+      splitLine: { lineStyle: { color: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)' } }
+    },
+    series: [
+      {
+        name: 'Arrhenius Curve',
+        type: 'line',
+        smooth: true,
+        data: curveData,
+        lineStyle: { color: '#38bdf8', width: 3.5, shadowColor: 'rgba(56, 189, 248, 0.5)', shadowBlur: 10 },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(56, 189, 248, 0.35)' },
+              { offset: 1, color: 'rgba(56, 189, 248, 0.0)' }
+            ]
+          }
+        }
+      },
+      {
+        name: 'Live Setpoint',
+        type: 'scatter',
+        data: [activePoint],
+        symbolSize: 16,
+        itemStyle: {
+          color: '#f59e0b',
+          borderColor: '#ffffff',
+          borderWidth: 2,
+          shadowColor: '#f59e0b',
+          shadowBlur: 15
+        }
+      }
+    ]
+  }), [darkMode, curveData, activePoint]);
+
   return (
     <div className="glass-panel p-6 space-y-6 page-transition-wrap">
       {/* ── Section Header ── */}
@@ -119,69 +183,9 @@ export default function DynamicViscositySensitivityEngine({ inputs = {}, darkMod
           <div className="h-60 w-full">
             <LazyChart
               style={{ height: '100%', width: '100%' }}
-              option={{
-                backgroundColor: 'transparent',
-                tooltip: {
-                  trigger: 'axis',
-                  backgroundColor: darkMode ? 'rgba(10, 13, 20, 0.95)' : 'rgba(255, 255, 255, 0.98)',
-                  borderColor: '#f59e0b',
-                  textStyle: { color: darkMode ? '#f8fafc' : '#0f172a', fontFamily: 'monospace', fontSize: 12 },
-                  formatter: (params) => {
-                    const pt = params[0]?.data;
-                    if (!pt) return '';
-                    return `Temperature: <b>${pt[0]} °C</b><br/>Crude Viscosity: <b style="color:#38bdf8;">${pt[1].toLocaleString()} cP</b>`;
-                  }
-                },
-                grid: { top: 20, bottom: 30, left: 60, right: 30 },
-                xAxis: {
-                  type: 'value',
-                  name: '°C',
-                  min: 40,
-                  max: 350,
-                  axisLabel: { color: darkMode ? '#94a3b8' : '#475569', fontFamily: 'monospace', fontSize: 11 },
-                  splitLine: { lineStyle: { color: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)' } }
-                },
-                yAxis: {
-                  type: 'log',
-                  name: 'cP (Log Scale)',
-                  min: 50,
-                  max: 15000,
-                  axisLabel: { color: darkMode ? '#94a3b8' : '#475569', fontFamily: 'monospace', fontSize: 11 },
-                  splitLine: { lineStyle: { color: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)' } }
-                },
-                series: [
-                  {
-                    name: 'Arrhenius Curve',
-                    type: 'line',
-                    smooth: true,
-                    data: curveData,
-                    lineStyle: { color: '#38bdf8', width: 3.5, shadowColor: 'rgba(56, 189, 248, 0.5)', shadowBlur: 10 },
-                    areaStyle: {
-                      color: {
-                        type: 'linear',
-                        x: 0, y: 0, x2: 0, y2: 1,
-                        colorStops: [
-                          { offset: 0, color: 'rgba(56, 189, 248, 0.35)' },
-                          { offset: 1, color: 'rgba(56, 189, 248, 0.0)' }
-                        ]
-                      }
-                    }
-                  },
-                  {
-                    name: 'Live Setpoint',
-                    type: 'scatter',
-                    data: [activePoint],
-                    symbolSize: 16,
-                    itemStyle: {
-                      color: '#f59e0b',
-                      borderColor: '#ffffff',
-                      borderWidth: 2,
-                      shadowColor: '#f59e0b',
-                      shadowBlur: 15
-                    }
-                  }
-                ]
-              }}
+              option={chartOption}
+              notMerge={true}
+              lazyUpdate={true}
             />
           </div>
 
@@ -262,3 +266,5 @@ export default function DynamicViscositySensitivityEngine({ inputs = {}, darkMod
     </div>
   );
 }
+
+export default React.memo(DynamicViscositySensitivityEngine);

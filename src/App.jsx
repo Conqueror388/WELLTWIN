@@ -149,37 +149,8 @@ function Clock() {
 }
 
 function AnimatedNumber({ value, suffix = '', decimals = 0 }) {
-  const [displayValue, setDisplayValue] = useState(value);
-  const startValueRef = useRef(value);
-
-  useEffect(() => {
-    let start = startValueRef.current;
-    const end = value;
-    if (start === end) return;
-    
-    const duration = 250; // ms
-    const startTime = performance.now();
-    
-    let animId;
-    const update = (now) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const ease = progress * (2 - progress); // ease out quad
-      const current = start + (end - start) * ease;
-      setDisplayValue(current);
-      startValueRef.current = current;
-      if (progress < 1) {
-        animId = requestAnimationFrame(update);
-      } else {
-        setDisplayValue(end);
-        startValueRef.current = end;
-      }
-    };
-    animId = requestAnimationFrame(update);
-    return () => cancelAnimationFrame(animId);
-  }, [value]);
-  
-  return <span>{displayValue.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}{suffix}</span>;
+  const numVal = typeof value === 'number' ? value : parseFloat(value) || 0;
+  return <span>{numVal.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}{suffix}</span>;
 }
 
 function DynamometerCard({ fillage, rodLoad, SPM, strokeLength }) {
