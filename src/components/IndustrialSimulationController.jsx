@@ -713,7 +713,7 @@ export default function IndustrialSimulationController({
                 )}
               </div>
               <div className="text-[11px] font-mono text-zinc-400">
-                Optimizing Recovery vs. Steam Fuel Cost for Jodhpur Member sandstone reservoir
+                Optimizing Recovery vs. Cumulative Steam-Oil Ratio (CSOR) for Jodhpur Member sandstone reservoir
               </div>
             </div>
           </div>
@@ -725,7 +725,7 @@ export default function IndustrialSimulationController({
                 <span className="text-zinc-400">Candidate #{selectedParetoPoint.id}: </span>
                 <span className="text-amber-400 font-bold">{selectedParetoPoint.production?.toFixed(0)} bbl/d</span>
                 <span className="text-zinc-500"> | </span>
-                <span className="text-amber-400 font-bold">₹{Math.round(selectedParetoPoint.cost)}/d</span>
+                <span className="text-amber-400 font-bold">CSOR: {selectedParetoPoint.csor || '0.05'} t/bbl</span>
               </div>
             )}
             <button

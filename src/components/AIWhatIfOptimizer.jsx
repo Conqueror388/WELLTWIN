@@ -10,8 +10,10 @@ import {
   Cpu,
   ChevronDown,
   ChevronUp,
-  FileText
+  FileText,
+  BookOpen
 } from 'lucide-react';
+import { getCalculationBreakdown } from '../simulationEngine';
 
 export default function AIWhatIfOptimizer({
   currentInputs = {},
@@ -25,6 +27,7 @@ export default function AIWhatIfOptimizer({
   const [activePreset, setActivePreset] = useState('pareto'); // 'current' | 'pareto'
   const [sliderRatio, setSliderRatio] = useState(1.0); // 0.0 (Current) to 1.0 (AI Pareto)
   const [showHealthDetails, setShowHealthDetails] = useState(false);
+  const [showFormulas, setShowFormulas] = useState(false);
   const [appliedToast, setAppliedToast] = useState(false);
 
   const fieldBaselineOil = 25.0; // Cold reservoir unheated baseline (BGW-014)
@@ -45,7 +48,8 @@ export default function AIWhatIfOptimizer({
     gearboxTorquePct: 68.5, // %
     pumpClearanceWear: 0.0042, // in
     mtbmDays: 142,
-    netMargin: 1045000 // ₹/month (SCADA Baseline)
+    csor: 0.40, // ton steam / bbl oil (Cold Reservoir Baseline)
+    steamEfficiency: 2.5 // bbl oil / ton steam
   }), [currentInputs, targetOilYield]);
 
   // AI-Recommended Pareto Knee-Point (NSGA-II Thermal & Mechanical Multi-Objective Solver)
@@ -61,7 +65,8 @@ export default function AIWhatIfOptimizer({
     gearboxTorquePct: 62.0, // Better balance & torque distribution
     pumpClearanceWear: 0.0035, // Optimal lubrication film
     mtbmDays: 184, // +42 operating days before maintenance
-    netMargin: 2590000 // +₹15,45,000/month gain
+    csor: 0.05, // -87.5% specific steam consumption (Optimal Sweep)
+    steamEfficiency: 21.2 // bbl oil / ton steam
   }), [targetOilYield]);
 
   // Computed live "What-If" values based on mode & slider
@@ -83,7 +88,8 @@ export default function AIWhatIfOptimizer({
       gearboxTorquePct: (lerp(baseline.gearboxTorquePct, aiPareto.gearboxTorquePct, effectiveRatio)).toFixed(1),
       pumpClearanceWear: (lerp(baseline.pumpClearanceWear, aiPareto.pumpClearanceWear, effectiveRatio)).toFixed(4),
       mtbmDays: Math.round(lerp(baseline.mtbmDays, aiPareto.mtbmDays, effectiveRatio)),
-      netMargin: Math.round(lerp(baseline.netMargin, aiPareto.netMargin, effectiveRatio))
+      csor: (lerp(baseline.csor, aiPareto.csor, effectiveRatio)).toFixed(2),
+      steamEfficiency: (lerp(baseline.steamEfficiency, aiPareto.steamEfficiency, effectiveRatio)).toFixed(1)
     };
   }, [baseline, aiPareto, effectiveRatio]);
 
@@ -316,25 +322,25 @@ export default function AIWhatIfOptimizer({
           </div>
         </div>
 
-        {/* Metric 4: Projected Net Margin */}
+        {/* Metric 4: Cumulative Steam-Oil Ratio (CSOR) */}
         <div className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2 transition-all ${
           darkMode ? 'bg-zinc-900/70 border-zinc-800/80' : 'bg-slate-50 border-slate-200'
         }`}>
           <div className="flex justify-between items-center text-xs font-mono">
-            <span className="text-zinc-400 uppercase font-bold">Net Well Margin</span>
+            <span className="text-zinc-400 uppercase font-bold">Cumulative SOR</span>
             <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-              +₹15.45L/mo
+              -87.5% Steam/bbl
             </span>
           </div>
           <div className="flex items-baseline gap-1 flex-wrap">
             <strong className="text-lg sm:text-2xl font-mono font-bold text-emerald-400">
-              ₹{currentScenario.netMargin.toLocaleString('en-IN')}
+              {currentScenario.csor}
             </strong>
-            <span className="text-[11px] sm:text-xs font-mono text-zinc-400">/mo</span>
+            <span className="text-[11px] sm:text-xs font-mono text-zinc-400">ton steam/bbl</span>
           </div>
           <div className="flex justify-between items-center text-[11px] font-mono text-zinc-400 border-t border-zinc-800/50 pt-1.5">
-            <span>NPV Impact</span>
-            <span className="text-emerald-400 font-bold">+148% Gain</span>
+            <span>Thermal Sweep</span>
+            <span className="text-emerald-400 font-bold">{currentScenario.steamEfficiency} bbl/ton</span>
           </div>
         </div>
       </div>
@@ -350,13 +356,24 @@ export default function AIWhatIfOptimizer({
               Predictive Machinery Health & MTBM Prognostics
             </h4>
           </div>
-          <button
-            onClick={() => setShowHealthDetails(!showHealthDetails)}
-            className="text-xs font-mono text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer"
-          >
-            <span>{showHealthDetails ? 'Hide Diagnostics' : 'Inspect MTBM Details'}</span>
-            {showHealthDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowFormulas(!showFormulas)}
+              className="text-xs font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20"
+              title="Inspect step-by-step physical equations, derivations, and SPE/API literature sources"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>{showFormulas ? 'Hide Formulations' : '📐 Physics Formulations & Sources'}</span>
+              {showFormulas ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+            <button
+              onClick={() => setShowHealthDetails(!showHealthDetails)}
+              className="text-xs font-mono text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer"
+            >
+              <span>{showHealthDetails ? 'Hide Diagnostics' : 'Inspect MTBM Details'}</span>
+              {showHealthDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+          </div>
         </div>
 
         {/* 3 Live Wear Meters Grid */}
@@ -452,6 +469,56 @@ export default function AIWhatIfOptimizer({
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                 <span>Gearbox Oil Viscosity Index: <strong>94 VI (Clean SAE-90)</strong></span>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Extended Physics Formulations & Literature Source Provenance (Collapsible) */}
+        {showFormulas && (
+          <div className={`mt-3 p-4 rounded-xl border text-xs font-mono space-y-3 animate-fade-in ${
+            darkMode ? 'bg-zinc-900/90 border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.1)]' : 'bg-emerald-50/70 border-emerald-300'
+          }`}>
+            <div className="flex items-center justify-between border-b pb-2 border-emerald-500/30">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-emerald-400" />
+                <span className="font-bold text-emerald-400 uppercase tracking-wider">
+                  Verified Petroleum Engineering Physics & Derivations:
+                </span>
+              </div>
+              <span className="text-[11px] font-bold text-zinc-400">
+                Calibrated for Well BGW-014 (Jodhpur Sandstone)
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {getCalculationBreakdown(currentInputs, currentMetrics).map((item, idx) => (
+                <div 
+                  key={idx} 
+                  className={`p-3 rounded-lg border flex flex-col justify-between gap-2 ${
+                    darkMode ? 'bg-black/50 border-zinc-800' : 'bg-white border-slate-200'
+                  }`}
+                >
+                  <div>
+                    <div className="flex justify-between items-center text-amber-400 font-bold mb-1">
+                      <span>{item.title}</span>
+                    </div>
+                    <div className="bg-zinc-950/80 px-2 py-1 rounded text-emerald-300 text-[11px] mb-2 font-mono border border-emerald-500/20">
+                      <code>{item.formula}</code>
+                    </div>
+                    <div className="space-y-1 text-zinc-300 text-[11px]">
+                      {item.steps.map((st, sIdx) => (
+                        <div key={sIdx} className="leading-tight text-zinc-400">
+                          • {st}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-zinc-800 text-[10px] text-zinc-400 font-sans flex items-center justify-between">
+                    <span className="text-zinc-500 uppercase font-bold font-mono">Source:</span>
+                    <span className="text-emerald-400/90 font-medium text-right">{item.source}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

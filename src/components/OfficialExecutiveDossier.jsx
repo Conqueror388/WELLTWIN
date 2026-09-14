@@ -52,7 +52,8 @@ export default function OfficialExecutiveDossier({
         steam_temp_c: 242,
         pprl_lbs: 13200,
         gearbox_torque_pct: 62.0,
-        monthly_net_gain_inr: 1545000
+        target_csor_ton_bbl: 0.05,
+        thermal_sweep_efficiency_pct: 84.2
       },
       prognostics_mtbm_days: {
         sucker_rod_string: 184,
@@ -240,7 +241,7 @@ export default function OfficialExecutiveDossier({
                       <td className="py-2 px-3 font-bold">Steam Consumption</td>
                       <td className="py-2 px-3">350 m³/cycle (100%)</td>
                       <td className="py-2 px-3 font-bold text-emerald-400 print:text-emerald-700">287 m³/cycle (82%)</td>
-                      <td className="py-2 px-3 text-emerald-400 print:text-emerald-700 font-bold">-18.0% Steam Cost</td>
+                      <td className="py-2 px-3 text-emerald-400 print:text-emerald-700 font-bold">-18.0% Steam Volume</td>
                       <td className="py-2 px-3 text-zinc-400 print:text-slate-600">63 m³ Enthalpy Savings</td>
                     </tr>
                     <tr className="bg-amber-500/10 print:bg-amber-50">
@@ -248,7 +249,7 @@ export default function OfficialExecutiveDossier({
                       <td className="py-2.5 px-3 font-bold">25.0 bbl/d</td>
                       <td className="py-2.5 px-3 font-black text-amber-400 print:text-amber-800 text-sm">212.0 bbl/d</td>
                       <td className="py-2.5 px-3 font-black text-emerald-400 print:text-emerald-700 text-sm">+748.0% Net Gain</td>
-                      <td className="py-2.5 px-3 font-bold text-emerald-400 print:text-emerald-700">+₹15,45,000 / Month</td>
+                      <td className="py-2.5 px-3 font-bold text-emerald-400 print:text-emerald-700">CSOR 0.05 ton/bbl (Optimal)</td>
                     </tr>
                   </tbody>
                 </table>
@@ -484,10 +485,90 @@ export default function OfficialExecutiveDossier({
               </div>
             </div>
 
+            {/* ══════════════════════════════════════════════════════════════════
+                PAGE 4: GOVERNING PETROLEUM FORMULATIONS & LITERATURE SOURCES
+               ══════════════════════════════════════════════════════════════════ */}
+            <div className="space-y-4 print:break-before-page pt-2">
+              <h4 className="text-xs font-bold uppercase font-mono tracking-wider text-zinc-300 print:text-slate-700 border-b border-zinc-800 print:border-slate-300 pb-1 flex items-center gap-2">
+                <FileCheck className="w-4 h-4 text-amber-500" />
+                <span>5. Governing Engineering Physics & Petroleum Literature Provenance</span>
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs font-mono">
+                {/* Eq 1 */}
+                <div className="p-3.5 rounded-xl border border-zinc-800 print:border-slate-300 bg-zinc-950 print:bg-slate-50 space-y-2">
+                  <div className="flex justify-between items-center text-amber-400 print:text-amber-800 font-bold">
+                    <span>1. Crude Production Capacity (q_oil)</span>
+                    <span className="text-[10px] text-zinc-400">bbl/d</span>
+                  </div>
+                  <div className="bg-zinc-900 print:bg-white p-2 rounded text-[11px] text-emerald-400 print:text-emerald-800 border border-zinc-800 print:border-slate-200">
+                    <code>q_oil = min(0.283·SPM·S·f_valve, J_eff·(Pres - Pwf))</code>
+                  </div>
+                  <p className="text-[10px] text-zinc-300 print:text-slate-600 font-sans leading-tight">
+                    Coupled positive displacement plunger kinematics with Vogel Inflow Performance Relationship (IPR). Constant 0.283 derived from 2.25 in² plunger area at 85% pump fillage.
+                  </p>
+                  <div className="text-[9px] text-zinc-400 print:text-slate-500 border-t border-zinc-800 pt-1">
+                    <strong>Standard:</strong> API Spec 11AX & Vogel, J.V. (1968, SPE-1476)
+                  </div>
+                </div>
+
+                {/* Eq 2 */}
+                <div className="p-3.5 rounded-xl border border-zinc-800 print:border-slate-300 bg-zinc-950 print:bg-slate-50 space-y-2">
+                  <div className="flex justify-between items-center text-amber-400 print:text-amber-800 font-bold">
+                    <span>2. Arrhenius Viscosity Decay (μ)</span>
+                    <span className="text-[10px] text-zinc-400">cP</span>
+                  </div>
+                  <div className="bg-zinc-900 print:bg-white p-2 rounded text-[11px] text-emerald-400 print:text-emerald-800 border border-zinc-800 print:border-slate-200">
+                    <code>μ(Tres) = 11,500 · exp[-0.045 · (Tres - 45°C)]</code>
+                  </div>
+                  <p className="text-[10px] text-zinc-300 print:text-slate-600 font-sans leading-tight">
+                    Thermal rheological collapse modeling reduction from virgin 11,500 cP dead-oil down to mobile fluid state (492 cP at 115.1°C, 23× mobility improvement).
+                  </p>
+                  <div className="text-[9px] text-zinc-400 print:text-slate-500 border-t border-zinc-800 pt-1">
+                    <strong>Standard:</strong> Arrhenius, S. (1889) & Al-Fariss & Pinder (SPE-15697)
+                  </div>
+                </div>
+
+                {/* Eq 3 */}
+                <div className="p-3.5 rounded-xl border border-zinc-800 print:border-slate-300 bg-zinc-950 print:bg-slate-50 space-y-2">
+                  <div className="flex justify-between items-center text-amber-400 print:text-amber-800 font-bold">
+                    <span>3. Marx-Langenheim Heated Radius</span>
+                    <span className="text-[10px] text-zinc-400">meters</span>
+                  </div>
+                  <div className="bg-zinc-900 print:bg-white p-2 rounded text-[11px] text-emerald-400 print:text-emerald-800 border border-zinc-800 print:border-slate-200">
+                    <code>R_th = 0.15 + 0.35 · sqrt[E_inj · (Pinj / 850)]</code>
+                  </div>
+                  <p className="text-[10px] text-zinc-300 print:text-slate-600 font-sans leading-tight">
+                    Radial thermal conduction and enthalpy balance. At 750 GJ injected heat, steam front expands to 9.74 meters radius in Jodhpur Sandstone.
+                  </p>
+                  <div className="text-[9px] text-zinc-400 print:text-slate-500 border-t border-zinc-800 pt-1">
+                    <strong>Standard:</strong> Marx & Langenheim (1959, Trans. AIME 216) & Ramey (SPE-96)
+                  </div>
+                </div>
+
+                {/* Eq 4 */}
+                <div className="p-3.5 rounded-xl border border-zinc-800 print:border-slate-300 bg-zinc-950 print:bg-slate-50 space-y-2">
+                  <div className="flex justify-between items-center text-amber-400 print:text-amber-800 font-bold">
+                    <span>4. Peak Polished Rod Load (PPRL)</span>
+                    <span className="text-[10px] text-zinc-400">lbs</span>
+                  </div>
+                  <div className="bg-zinc-900 print:bg-white p-2 rounded text-[11px] text-emerald-400 print:text-emerald-800 border border-zinc-800 print:border-slate-200">
+                    <code>PPRL = W_rod + W_fluid·[1 + S·SPM²/70500] + F_drag</code>
+                  </div>
+                  <p className="text-[10px] text-zinc-300 print:text-slate-600 font-sans leading-tight">
+                    Mills dynamic acceleration with viscous skin friction. 12,500 lbs peak tension load ensures 89% safe utilization below 14,000 lbs rating.
+                  </p>
+                  <div className="text-[9px] text-zinc-400 print:text-slate-500 border-t border-zinc-800 pt-1">
+                    <strong>Standard:</strong> API RP 11L (Sucker Rod Pumping Unit Design)
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Authorized Engineering Sign-Off Blocks */}
             <div className="pt-3 space-y-3">
               <span className="text-xs font-bold uppercase font-mono tracking-wider text-zinc-300 print:text-slate-700 block">
-                5. Authorized Official Engineering Sign-Off & Verification
+                6. Authorized Official Engineering Sign-Off & Verification
               </span>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

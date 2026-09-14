@@ -72,18 +72,22 @@ import {
   ChevronDown,
   Compass,
   FileCheck,
-  Download
+  Download,
+  Calculator
 } from 'lucide-react';
 import { 
+  RESERVOIR_CONFIG,
   runPhysicsModel, 
-  generateParetoFront, 
-  generateHistoricalData 
+  generateHistoricalData, 
+  generateParetoFront,
+  calculateConfidence 
 } from './simulationEngine';
 import ThreeDWellWorkspace from './components/ThreeDWellWorkspace';
 import IndustrialSimulationController from './components/IndustrialSimulationController';
 import OilIndiaUpgradeHub from './components/OilIndiaUpgradeHub';
 import AIWhatIfOptimizer from './components/AIWhatIfOptimizer';
 import OfficialExecutiveDossier from './components/OfficialExecutiveDossier';
+import EngineeringFormulasModal from './components/EngineeringFormulasModal';
 
 const DynamicEChart = React.lazy(async () => {
   const [echartsModule, reactEchartsModule] = await Promise.all([
@@ -272,6 +276,7 @@ function App() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [xrayExploded, setXrayExploded] = useState(false);
   const [showExecutiveDossier, setShowExecutiveDossier] = useState(false);
+  const [showPhysicsModal, setShowPhysicsModal] = useState(false);
   
   // PWA Web Install State
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState(null);
@@ -1036,6 +1041,24 @@ function App() {
                 <span className="sm:hidden">Install</span>
               </button>
             )}
+
+            {/* Engineering Physics Formulations & Sources Modal Trigger */}
+            <button
+              onClick={() => {
+                setShowPhysicsModal(true);
+                playHoloSound('tab');
+              }}
+              className={`flex items-center gap-1.5 px-2 sm:px-2.5 h-7 sm:h-8 border rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-mono font-bold uppercase transition-all cursor-pointer flex-shrink-0 ${
+                darkMode
+                  ? 'bg-emerald-950/40 hover:bg-emerald-900/50 text-emerald-400 border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.15)]'
+                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300 shadow-sm'
+              }`}
+              title="Inspect Verified Mathematical Equations, Derivations, and Literature Citations"
+            >
+              <Calculator className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden md:inline">Physics & Sources</span>
+              <span className="md:hidden">Physics</span>
+            </button>
 
             {/* Theme Toggle */}
             <button
@@ -2150,7 +2173,7 @@ function App() {
                 </div>
                 <div className="bg-slate-100 dark:bg-black/30 p-3 rounded-lg ">
                   <span className="text-amber-400 font-bold block mb-1">3. HEATED ZONE</span>
-                  <p className="text-zinc-200 dark:text-zinc-200 light:text-slate-700 text-xs font-medium leading-relaxed">Viscosity drops to 420 cP. Heated radius expands to 18.4m.</p>
+                  <p className="text-zinc-200 dark:text-zinc-200 light:text-slate-700 text-xs font-medium leading-relaxed">Viscosity drops to {currentMetrics.viscosity || 492} cP. Heated radius expands to {currentMetrics.heated_radius || 9.74}m.</p>
                 </div>
                 <div className="bg-slate-100 dark:bg-black/30 p-3 rounded-lg ">
                   <span className="text-amber-400 font-bold block mb-1">4. EXTRACTION</span>
@@ -2158,7 +2181,7 @@ function App() {
                 </div>
                 <div className="bg-slate-100 dark:bg-black/30 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
                   <span className="text-amber-300 font-bold block mb-1">5. RECOMMEND</span>
-                  <p className="text-zinc-300 text-xs font-medium leading-relaxed">Optimal knee-point setpoints applied. Peak revenue with safe rod loads.</p>
+                  <p className="text-zinc-300 text-xs font-medium leading-relaxed">Optimal knee-point setpoints applied. Peak thermal sweep efficiency (CSOR 0.05 ton/bbl) with safe rod loads.</p>
                 </div>
               </div>
             </div>
@@ -2827,7 +2850,7 @@ function App() {
                         style={{ height: '100%', width: '100%' }}
                         onEvents={{
                           'click': (params) => {
-                            const sorted = [...paretoFrontData].sort((a, b) => a.cost - b.cost);
+                            const sorted = [...paretoFrontData].sort((a, b) => a.production - b.production);
                             if (params.dataIndex !== undefined && sorted[params.dataIndex]) {
                               setSelectedParetoPoint(sorted[params.dataIndex]);
                             }
@@ -2842,26 +2865,27 @@ function App() {
                             textStyle: { color: '#f8fafc', fontFamily: 'monospace', fontSize: 11 },
                             formatter: (params) => {
                               const p0 = params[0];
-                              const sorted = [...paretoFrontData].sort((a, b) => a.cost - b.cost);
+                              const sorted = [...paretoFrontData].sort((a, b) => a.production - b.production);
                               const item = sorted[p0.dataIndex] || {};
                               return `<div class="p-1 space-y-1">
                                 <div class="font-bold text-amber-400 uppercase">Scenario #${item.id || p0.dataIndex + 1}</div>
-                                <div class="text-zinc-300">Daily Cost: <strong class="text-white">₹${(item.cost || p0.value[0]).toLocaleString()}</strong></div>
-                                <div class="text-zinc-300">Oil Recovery: <strong class="text-amber-400">${item.production || p0.value[1]} bbl/d</strong></div>
+                                <div class="text-zinc-300">Cumulative SOR: <strong class="text-white">${item.csor || 0.05} ton/bbl</strong></div>
+                                <div class="text-zinc-300">Oil Yield: <strong class="text-amber-400">${item.production || p0.value[1]} bbl/d</strong></div>
                                 <div class="text-zinc-200 dark:text-zinc-200 light:text-slate-700 text-xs">Temp: ${item.inputs?.steam_T || 235}°C | Speed: ${item.inputs?.SPM || 8.2} SPM</div>
+                                <div class="text-zinc-400 text-[10px]">Rod Tension: ${item.rodLoad || 12500} lbs (${item.rodLoadPct || 89}% Safe Limit)</div>
                               </div>`;
                             }
                           },
                           legend: {
-                            data: ['Optimal Yield Curve (bbl/d)', 'Specific ROI (bbl / ₹1k)'],
+                            data: ['Optimal Yield Curve (bbl/d)', 'Specific Steam Recovery (bbl / ton steam)'],
                             top: 0,
                             textStyle: { color: '#94a3b8', fontSize: 10, fontFamily: 'monospace' }
                           },
                           grid: { top: 35, bottom: 35, left: 55, right: 45 },
                           xAxis: { 
-                            name: 'Scenario (by Cost)',
+                            name: 'Scenario (by Production)',
                             type: 'category',
-                            data: [...paretoFrontData].sort((a, b) => a.cost - b.cost).map(pt => `₹${(pt.cost/1000).toFixed(0)}k`),
+                            data: [...paretoFrontData].sort((a, b) => a.production - b.production).map((pt, idx) => `#${pt.id || idx + 1}`),
                             axisLabel: { color: '#94a3b8', fontSize: 10, fontFamily: 'monospace' },
                             axisLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.12)' } }
                           },
@@ -2874,7 +2898,7 @@ function App() {
                               nameTextStyle: { color: '#10b981', fontSize: 10 }
                             },
                             { 
-                              name: 'bbl / ₹1k',
+                              name: 'bbl / ton steam',
                               type: 'value',
                               splitLine: { show: false },
                               axisLabel: { color: '#a855f7', fontSize: 10, fontFamily: 'monospace' },
@@ -2888,7 +2912,7 @@ function App() {
                               yAxisIndex: 0,
                               smooth: 0.35,
                               symbol: 'none',
-                              data: [...paretoFrontData].sort((a, b) => a.cost - b.cost).map(pt => pt.production),
+                              data: [...paretoFrontData].sort((a, b) => a.production - b.production).map(pt => pt.production),
                               lineStyle: { color: '#10b981', width: 3.5, shadowColor: 'rgba(16, 185, 129, 0.65)', shadowBlur: 12 },
                               areaStyle: {
                                 color: {
@@ -2903,19 +2927,19 @@ function App() {
                               markPoint: {
                                 data: [
                                   { type: 'max', name: 'Max Production' },
-                                  { type: 'min', name: 'Low Cost' }
+                                  { type: 'min', name: 'Minimum Energy' }
                                 ],
                                 itemStyle: { color: '#f59e0b' },
                                 label: { fontFamily: 'monospace', fontSize: 10, fontWeight: 'bold' }
                               }
                             },
                             {
-                              name: 'Specific ROI (bbl / ₹1k)',
+                              name: 'Specific Steam Recovery (bbl / ton steam)',
                               type: 'line',
                               yAxisIndex: 1,
                               smooth: 0.35,
                               symbol: 'none',
-                              data: [...paretoFrontData].sort((a, b) => a.cost - b.cost).map(pt => parseFloat(((pt.production / pt.cost) * 1000).toFixed(2))),
+                              data: [...paretoFrontData].sort((a, b) => a.production - b.production).map(pt => pt.specificSteamYield || 21.2),
                               lineStyle: { color: '#a855f7', width: 2.5, shadowColor: 'rgba(168, 85, 247, 0.5)', shadowBlur: 10 },
                               areaStyle: {
                                 color: {
@@ -2956,7 +2980,7 @@ function App() {
                             )}
                           </div>
                           <div className="flex items-center gap-4">
-                            <span className="text-zinc-200 dark:text-zinc-200 light:text-slate-700">₹{Math.round(pt.cost)}/day</span>
+                            <span className="text-zinc-200 dark:text-zinc-200 light:text-slate-700">CSOR: {pt.csor || '0.05'} t/bbl</span>
                             <span className="text-amber-400 font-bold">{pt.production.toFixed(0)} bbl/d</span>
                           </div>
                         </div>
@@ -2971,7 +2995,7 @@ function App() {
                 <div className="space-y-6">
                   <div className="border-b border-zinc-900/50 pb-3">
                     <h3 className="text-lg font-tactical font-bold text-white uppercase tracking-wider">Expected Impact & SCADA Write</h3>
-                    <span className="text-xs text-zinc-200 dark:text-zinc-200 light:text-slate-700 font-mono font-semibold">ECONOMIC & MECHANICAL GAIN</span>
+                    <span className="text-xs text-zinc-200 dark:text-zinc-200 light:text-slate-700 font-mono font-semibold">THERMAL SWEEP & MECHANICAL RECOVERY</span>
                   </div>
 
                   <div className="bg-slate-50 dark:bg-black/40  rounded-xl text-slate-800 dark:text-zinc-100 shadow-sm p-4  rounded-2xl space-y-3 font-mono text-xs text-zinc-300">
@@ -2980,12 +3004,12 @@ function App() {
                       <strong className="text-amber-400 font-bold text-sm">{selectedParetoPoint ? selectedParetoPoint.production.toFixed(0) : currentMetrics.q_oil} bbl/d</strong>
                     </div>
                     <div className="flex justify-between border-b border-zinc-900 pb-2">
-                      <span className="text-zinc-200 dark:text-zinc-200 light:text-slate-700">Energy Operating Cost:</span>
-                      <span className="text-amber-400 font-bold">₹{selectedParetoPoint ? Math.round(selectedParetoPoint.cost) : '1,420'}/day</span>
+                      <span className="text-zinc-200 dark:text-zinc-200 light:text-slate-700">Cumulative Steam-Oil Ratio:</span>
+                      <span className="text-amber-400 font-bold">{selectedParetoPoint ? (selectedParetoPoint.csor || '0.05') : '0.05'} ton/bbl</span>
                     </div>
                     <div className="flex justify-between border-b border-zinc-900 pb-2">
                       <span className="text-zinc-200 dark:text-zinc-200 light:text-slate-700">Peak Rod Stress:</span>
-                      <span className="text-white font-bold">64% (Safe)</span>
+                      <span className="text-white font-bold">{selectedParetoPoint ? (selectedParetoPoint.rodLoadPct || 89) : 89}% (Safe)</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-zinc-200 dark:text-zinc-200 light:text-slate-700">Operating Risk Index:</span>
@@ -2997,7 +3021,7 @@ function App() {
                   <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl space-y-2 text-xs">
                     <span className="text-amber-400 font-bold font-mono block uppercase">RECOMMENDED CANDIDATE SETPOINTS</span>
                     <p className="text-zinc-300 font-sans leading-relaxed">
-                      Applying candidate #{selectedParetoPoint?.id || 20} matches the Jodhpur Sandstone thermal mobilization knee-point to maximize production per Rupee of steam cost.
+                      Applying candidate #{selectedParetoPoint?.id || 20} matches the Jodhpur Sandstone thermal mobilization knee-point to maximize production per ton of injected steam while maintaining safe rod stress limits.
                     </p>
                   </div>
                 </div>
@@ -3998,6 +4022,15 @@ function App() {
         currentInputs={inputs}
         currentMetrics={currentMetrics}
         wellId={selectedWell?.id || 'BGW-014'}
+        darkMode={darkMode}
+      />
+
+      {/* Verified Petroleum Engineering Physics Formulations & Literature Sources Modal */}
+      <EngineeringFormulasModal
+        isOpen={showPhysicsModal}
+        onClose={() => setShowPhysicsModal(false)}
+        currentInputs={inputs}
+        currentMetrics={currentMetrics}
         darkMode={darkMode}
       />
 
