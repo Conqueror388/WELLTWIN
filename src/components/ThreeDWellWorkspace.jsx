@@ -347,13 +347,12 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
     scene.add(ambientLight);
     
     // Key Sun Light with High-Resolution 2048px Shadows
+    // Key Sun Light with High-Performance 1024px Soft Penumbra Shadows
     const sunLight = new THREE.DirectionalLight('#fffaf0', 4.5);
     sunLight.position.set(70, 95, 45);
     sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 2048;
-    sunLight.shadow.mapSize.height = 2048;
-    sunLight.shadow.bias = -0.00005;
-    sunLight.shadow.normalBias = 0.015;
+    sunLight.shadow.mapSize.width = 1024;
+    sunLight.shadow.mapSize.height = 1024;
     sunLight.shadow.camera.left = -110;
     sunLight.shadow.camera.right = 110;
     sunLight.shadow.camera.top = 110;
@@ -891,8 +890,10 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
     let lastTime = performance.now() * 0.001;
     let animationFrameId;
     let xrayLerpFactor = 0.0;
+    let frameCount = 0;
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
+      frameCount++;
 
       // Inactive tab / background throttle & visibility check
       if (!isTabVisibleRef.current || !isVisibleRef.current) return;
@@ -1325,18 +1326,20 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
         cs.userData.anemometer.rotation.y = time * 6.5;
       }
 
-      // Boiler steam exhaust smoke billows
-      const smPos = smokeGeo.attributes.position.array;
-      for (let i = 0; i < smokeCount; i++) {
-        const s = smokeSpeeds[i];
-        smPos[i * 3 + 1] += s.vy * 1.8; smPos[i * 3] += s.vx * 1.4; smPos[i * 3 + 2] += s.vz * 1.4;
-        if (smPos[i * 3 + 1] > 26) {
-          smPos[i * 3] = -16 + (Math.random() - 0.5) * 0.8;
-          smPos[i * 3 + 1] = 12;
-          smPos[i * 3 + 2] = -17 + (Math.random() - 0.5) * 0.8;
+      // Boiler steam exhaust smoke billows (throttled to alternate frames to reduce GPU buffer upload overhead)
+      if (frameCount % 2 === 0) {
+        const smPos = smokeGeo.attributes.position.array;
+        for (let i = 0; i < smokeCount; i++) {
+          const s = smokeSpeeds[i];
+          smPos[i * 3 + 1] += s.vy * 3.6; smPos[i * 3] += s.vx * 2.8; smPos[i * 3 + 2] += s.vz * 2.8;
+          if (smPos[i * 3 + 1] > 26) {
+            smPos[i * 3] = -16 + (Math.random() - 0.5) * 0.8;
+            smPos[i * 3 + 1] = 12;
+            smPos[i * 3 + 2] = -17 + (Math.random() - 0.5) * 0.8;
+          }
         }
+        smokeGeo.attributes.position.needsUpdate = true;
       }
-      smokeGeo.attributes.position.needsUpdate = true;
 
       // Storage tank dynamic level and inlet turbulence
         if (tanksAsset && tanksAsset.userData && tanksAsset.userData.tanks) {
@@ -1588,4 +1591,4 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
   );
 });
 
-export default ThreeDWellWorkspace;
+export default React.memo(ThreeDWellWorkspace);

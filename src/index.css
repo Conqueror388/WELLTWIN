@@ -1116,29 +1116,6 @@ h1, h2, h3, h4, h5, h6,
 
 /* ── ULTRA-BIG CINEMATIC CYBERNETIC VISUAL UPGRADE ────────────────────────── */
 
-/* 1. Holographic Laser Scanline Sweep */
-@keyframes holoScanline {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(1000%);
-  }
-}
-
-.holo-scanline-beam {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.8) 50%, transparent 100%);
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.9), 0 0 30px rgba(14, 165, 233, 0.6);
-  pointer-events: none;
-  z-index: 25;
-  animation: holoScanline 6s linear infinite;
-}
-
 /* 2. Rotating Neon Border Beam */
 @keyframes spinBorder {
   0% {

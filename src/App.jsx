@@ -1283,8 +1283,6 @@ function App() {
         </div>
       </header>
 
-      {/* Dynamic Laser Scanline Sweeping Beam across UI */}
-      <div className="holo-scanline-beam" />
 
       {/* Industrial SCADA Safety Alarm Notification Banner */}
       {scadaAlert && (
