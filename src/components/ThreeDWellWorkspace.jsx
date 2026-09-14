@@ -249,6 +249,7 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
     renderer.setPixelRatio(pr);
     renderer.shadowMap.enabled = quality !== 'Low';
     renderer.shadowMap.type = quality === 'High' ? THREE.PCFSoftShadowMap : THREE.BasicShadowMap;
+    renderer.shadowMap.autoUpdate = false;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.15;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -416,12 +417,10 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
     const thermalPulseShells = [];
     for (let i = 0; i < 3; i++) {
       const shellGeo = new THREE.SphereGeometry(1.0, 24, 24);
-      const shellMat = new THREE.MeshStandardMaterial({
+      const shellMat = new THREE.MeshBasicMaterial({
         color: i === 0 ? '#ff4500' : (i === 1 ? '#ff8c00' : '#ffd700'),
         transparent: true,
         opacity: 0.45,
-        emissive: i === 0 ? '#ff2200' : '#ff7700',
-        emissiveIntensity: 0.9,
         depthWrite: false,
         wireframe: i === 2
       });
@@ -903,8 +902,23 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
       lastTime = now;
       const time = now;
 
+      // ── MODE-AWARE ISOLATION & SHADOW MANAGEMENT ──
+      const isReservoirOnly = viewModeRef.current === 'reservoir' || viewModeRef.current === 'subsurface';
+      surfaceGroup.visible = !isReservoirOnly;
+
+      if (renderer.shadowMap.enabled) {
+        if (isReservoirOnly) {
+          if (sunLight.castShadow) sunLight.castShadow = false;
+        } else {
+          if (!sunLight.castShadow) sunLight.castShadow = true;
+          if (frameCount % 2 === 0) {
+            renderer.shadowMap.needsUpdate = true;
+          }
+        }
+      }
+
       // ── 1. MECHANICAL WORKING ANIMATIONS ──────────────────────────────────
-      // Sucker Rod Pumpjack (SRP) Working Mechanism
+      // Sucker Rod Pumpjack (SRP) Working Mechanism (only computed when surface is visible)
       const spmVal = parseFloat(currentMetricsRef.current.SPM) || SPM;
       const spmSpeed = simIsPlayingRef.current ? (spmVal * Math.PI * 2) / 60 : 0;
       const angle = time * spmSpeed;
@@ -915,7 +929,7 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
       const strokeAmp = (strokeVal / 100) * 0.22; // Pronounced swing amplitude
       const beamPitch = Math.sin(angle) * strokeAmp;
 
-      if (pj) {
+      if (pj && surfaceGroup.visible) {
         if (pj.beam) pj.beam.rotation.z = beamPitch;
         if (wh?.polishedRod) {
           wh.polishedRod.position.y = 12 - strokeProgress * (strokeVal / 100) * 3.4;
@@ -1118,89 +1132,89 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
         if (flowVelBarRef.current) flowVelBarRef.current.style.width = `${(vel * 100).toFixed(1)}%`;
       }
 
-      // Rapid steam flow inside pipeline
-      steamFlowParticles.forEach((dot, idx) => {
-        const offset = (time * 1.6 + idx / steamFlowParticles.length) % 1.0;
-        if (offset < 0.5) {
-          dot.position.lerpVectors(steamStart1, steamEnd1, offset * 2);
-        } else {
-          dot.position.lerpVectors(steamStart2, steamEnd2, (offset - 0.5) * 2);
-        }
-        dot.scale.setScalar(1.2 + Math.sin(time * 8 + idx) * 0.4);
-      });
-
-      // Liquid crude oil flow through surface pipes (with extraction pulse)
-      if (fluidRegistryRef.current) {
-        const pulseMult = isUpstroke ? 1.5 : 0.7;
-        fluidRegistryRef.current.forEach((seg) => {
-          if (seg.fluidMesh && seg.fluidMesh.material && seg.fluidMesh.material.map) {
-            if (isFlowing) {
-              seg.fluidMesh.material.map.offset.x -= delta * vel * 2.2 * pulseMult;
-            }
+      // Rapid steam flow inside pipeline (only when surface facility is visible)
+      if (surfaceGroup.visible) {
+        steamFlowParticles.forEach((dot, idx) => {
+          const offset = (time * 1.6 + idx / steamFlowParticles.length) % 1.0;
+          if (offset < 0.5) {
+            dot.position.lerpVectors(steamStart1, steamEnd1, offset * 2);
+          } else {
+            dot.position.lerpVectors(steamStart2, steamEnd2, (offset - 0.5) * 2);
           }
-          seg.chevrons.forEach((chev) => {
-            if (!isFlowing || !showDir) {
-              if (chev.material.opacity !== 0) chev.material.opacity = 0;
-              return;
+          dot.scale.setScalar(1.2 + Math.sin(time * 8 + idx) * 0.4);
+        });
+
+        // Liquid crude oil flow through surface pipes (with extraction pulse)
+        if (fluidRegistryRef.current) {
+          const pulseMult = isUpstroke ? 1.5 : 0.7;
+          fluidRegistryRef.current.forEach((seg) => {
+            if (seg.fluidMesh && seg.fluidMesh.material && seg.fluidMesh.material.map) {
+              if (isFlowing) {
+                seg.fluidMesh.material.map.offset.x -= delta * vel * 2.2 * pulseMult;
+              }
             }
-            const baseT = chev.userData.baseT;
-            const t = (baseT + time * vel * 0.75 * pulseMult) % 1.0;
-            chev.position.lerpVectors(seg.startPt, seg.endPt, t);
-            chev.position.y -= 0.22;
-            chev.material.opacity = 0.95;
-            chev.scale.setScalar(1.25);
+            seg.chevrons.forEach((chev) => {
+              if (!isFlowing || !showDir) {
+                if (chev.material.opacity !== 0) chev.material.opacity = 0;
+                return;
+              }
+              const baseT = chev.userData.baseT;
+              const t = (baseT + time * vel * 0.75 * pulseMult) % 1.0;
+              chev.position.lerpVectors(seg.startPt, seg.endPt, t);
+              chev.position.y -= 0.22;
+              chev.material.opacity = 0.95;
+              chev.scale.setScalar(1.25);
+            });
           });
+        }
+
+        // ── DRIVE INTERNAL WORKING PROCESSES (CONTINUOUS EVEN WHEN EXPLODED) ──
+        // A. Separator 3-Phase Internal Separation Flow
+        sepBubbles.forEach((b) => {
+          const bProgress = (time * b.speed + b.seed) % 1.0;
+          if (b.isGas) {
+            // Gas vapor rises to upper mist extractor
+            b.mesh.position.y = -0.5 + bProgress * 1.8;
+            b.mesh.position.x = Math.sin(time * 3 + b.seed) * 2.5;
+          } else {
+            // Oil spills over weir plate and cascades into bucket
+            b.mesh.position.x = -2.5 + bProgress * 5.0;
+            b.mesh.position.y = 0.4 - (bProgress > 0.6 ? (bProgress - 0.6) * 2.2 : 0);
+          }
+          b.mesh.scale.setScalar(0.8 + Math.sin(bProgress * Math.PI) * 0.5);
+        });
+
+        // B. Boiler Internal Superheated Steam Helical Flow & Burner Fire Pulse
+        boilerCoilParticles.forEach((pMesh, pIdx) => {
+          const pAngle = time * 4.0 + (pIdx / boilerCoilParticles.length) * Math.PI * 6;
+          const coilRadius = 1.6;
+          pMesh.position.set(
+            Math.cos(pAngle) * coilRadius,
+            -1.5 + (pIdx / boilerCoilParticles.length) * 3.2,
+            Math.sin(pAngle) * coilRadius
+          );
+          pMesh.scale.setScalar(1.0 + Math.sin(time * 8 + pIdx) * 0.4);
+        });
+        burnerFlameCore.scale.set(
+          1.1 + Math.sin(time * 18) * 0.25,
+          1.3 + Math.cos(time * 22) * 0.35,
+          1.1 + Math.sin(time * 15) * 0.25
+        );
+
+        // C. Wellhead Internal High-Pressure Oil Stream Jet (Pulsing with SRP upstroke discharge)
+        whJetParticles.forEach((jMesh, jIdx) => {
+          const jProgress = (time * (isUpstroke ? 3.5 : 1.2) + jIdx / whJetParticles.length) % 1.0;
+          jMesh.position.set(
+            jProgress * 3.5, // shooting from wellbore center into horizontal production wing
+            Math.sin(time * 12 + jIdx) * 0.12,
+            Math.cos(time * 12 + jIdx) * 0.12
+          );
+          jMesh.scale.setScalar((isUpstroke ? 1.4 : 0.8) + Math.sin(jProgress * Math.PI) * 0.4);
         });
       }
-
-      // ── DRIVE INTERNAL WORKING PROCESSES (CONTINUOUS EVEN WHEN EXPLODED) ──
-      // A. Separator 3-Phase Internal Separation Flow
-      sepBubbles.forEach((b) => {
-        const bProgress = (time * b.speed + b.seed) % 1.0;
-        if (b.isGas) {
-          // Gas vapor rises to upper mist extractor
-          b.mesh.position.y = -0.5 + bProgress * 1.8;
-          b.mesh.position.x = Math.sin(time * 3 + b.seed) * 2.5;
-        } else {
-          // Oil spills over weir plate and cascades into bucket
-          b.mesh.position.x = -2.5 + bProgress * 5.0;
-          b.mesh.position.y = 0.4 - (bProgress > 0.6 ? (bProgress - 0.6) * 2.2 : 0);
-        }
-        b.mesh.scale.setScalar(0.8 + Math.sin(bProgress * Math.PI) * 0.5);
-      });
-
-      // B. Boiler Internal Superheated Steam Helical Flow & Burner Fire Pulse
-      boilerCoilParticles.forEach((pMesh, pIdx) => {
-        const pAngle = time * 4.0 + (pIdx / boilerCoilParticles.length) * Math.PI * 6;
-        const coilRadius = 1.6;
-        pMesh.position.set(
-          Math.cos(pAngle) * coilRadius,
-          -1.5 + (pIdx / boilerCoilParticles.length) * 3.2,
-          Math.sin(pAngle) * coilRadius
-        );
-        pMesh.scale.setScalar(1.0 + Math.sin(time * 8 + pIdx) * 0.4);
-      });
-      burnerFlameCore.scale.set(
-        1.1 + Math.sin(time * 18) * 0.25,
-        1.3 + Math.cos(time * 22) * 0.35,
-        1.1 + Math.sin(time * 15) * 0.25
-      );
-
-      // C. Wellhead Internal High-Pressure Oil Stream Jet (Pulsing with SRP upstroke discharge)
-      whJetParticles.forEach((jMesh, jIdx) => {
-        const jProgress = (time * (isUpstroke ? 3.5 : 1.2) + jIdx / whJetParticles.length) % 1.0;
-        jMesh.position.set(
-          jProgress * 3.5, // shooting from wellbore center into horizontal production wing
-          Math.sin(time * 12 + jIdx) * 0.12,
-          Math.cos(time * 12 + jIdx) * 0.12
-        );
-        jMesh.scale.setScalar((isUpstroke ? 1.4 : 0.8) + Math.sin(jProgress * Math.PI) * 0.4);
-      });
       // ────────────────────────────────────────────────────────────────────────
 
       // ── DYNAMIC SURFACE VS. UNDERGROUND UTILITY ISOLATION ──
-      const isReservoirOnly = viewModeRef.current === 'reservoir' || viewModeRef.current === 'subsurface';
-      surfaceGroup.visible = !isReservoirOnly;
       
       // Dynamic ground layer transparency (0% = soil completely invisible / hidden for 100% unobstructed wellbore view)
       const gTrans = typeof groundTransparencyRef.current === 'number' ? groundTransparencyRef.current : 0.0;
@@ -1288,80 +1302,83 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
         sp.mesh.scale.setScalar(0.5 + Math.sin(spProg * Math.PI) * 0.35);
       });
 
-      // E. Reservoir Geological Flow Vectors (Clean refined lengths)
+      // E. Reservoir Geological Flow Vectors (Clean GPU transform scaling)
       if (reservoirArrows) {
         reservoirArrows.visible = showSubsurfaceOilFlowRef.current;
-        if (showSubsurfaceOilFlowRef.current && frameCount % 3 === 0) {
+        if (showSubsurfaceOilFlowRef.current) {
           steamArrows.forEach((arr, idx) => {
-            const pulse = 1.6 + Math.sin(time * 6 + idx) * 0.5;
-            arr.setLength(pulse, 0.5, 0.25);
+            const pulse = 0.85 + Math.sin(time * 5 + idx) * 0.25;
+            arr.scale.set(1, 1, pulse);
           });
           oilArrows.forEach((arr, idx) => {
-            const pulse = 1.8 + Math.cos(time * 5 + idx) * 0.6;
-            arr.setLength(pulse, 0.5, 0.25);
+            const pulse = 0.85 + Math.cos(time * 4.5 + idx) * 0.25;
+            arr.scale.set(1, 1, pulse);
           });
         }
       }
       // ────────────────────────────────────────────────────────────────────────
 
-      // Warning beacons flashing
-      warningBeacons.forEach(b => {
-        const intensity = 0.5 + Math.sin(time * 8) * 0.5;
-        if (b.children[0] && b.children[0].material) b.children[0].material.color.setHSL(0, 1.0, 0.35 + intensity * 0.25);
-        if (b.children[2]) b.children[2].intensity = intensity * 2.2;
-      });
-
-      // Roaring flare flame
-      if (fl?.flareLight) {
-        fl.flareLight.intensity = 4.5 + Math.sin(time * 24) * 2.5;
-      }
-      if (fl?.flameMesh) {
-        fl.flameMesh.scale.set(1.2 + Math.sin(time * 16) * 0.3, 1.6 + Math.cos(time * 19) * 0.4, 1.2 + Math.sin(time * 14) * 0.3);
-      }
-      if (fl?.flameInner) {
-        fl.flameInner.scale.set(1.0 + Math.sin(time * 28) * 0.2, 1.3 + Math.cos(time * 22) * 0.3, 1.0 + Math.sin(time * 25) * 0.2);
-      }
-
-      // Drive Combustion Blower Fan & Meteorological Anemometer
-      if (sb?.steamStation?.userData?.fanRotor) {
-        sb.steamStation.userData.fanRotor.rotation.z = time * 18.0;
-      }
-      if (cs?.userData?.anemometer) {
-        cs.userData.anemometer.rotation.y = time * 6.5;
-      }
-
-      // Boiler steam exhaust smoke billows (throttled to alternate frames to reduce GPU buffer upload overhead)
-      if (frameCount % 2 === 0) {
-        const smPos = smokeGeo.attributes.position.array;
-        for (let i = 0; i < smokeCount; i++) {
-          const s = smokeSpeeds[i];
-          smPos[i * 3 + 1] += s.vy * 3.6; smPos[i * 3] += s.vx * 2.8; smPos[i * 3 + 2] += s.vz * 2.8;
-          if (smPos[i * 3 + 1] > 26) {
-            smPos[i * 3] = -16 + (Math.random() - 0.5) * 0.8;
-            smPos[i * 3 + 1] = 12;
-            smPos[i * 3 + 2] = -17 + (Math.random() - 0.5) * 0.8;
-          }
-        }
-        smokeGeo.attributes.position.needsUpdate = true;
-      }
-
-      // Storage tank dynamic level and inlet turbulence
-        if (tanksAsset && tanksAsset.userData && tanksAsset.userData.tanks) {
-        tanksAsset.userData.tanks.forEach((tRef, tIdx) => {
-          const qOilVal = parseFloat(currentMetricsRef.current.q_oil) || 0;
-          const fillRatio = Math.max(0.15, Math.min(0.95, 0.25 + (time * (qOilVal / 700)) % 0.65));
-          const maxLiquidH = 9.6;
-          const currentH = maxLiquidH * fillRatio;
-          if (tRef.liquidMesh) {
-            tRef.liquidMesh.scale.y = fillRatio;
-            tRef.liquidMesh.position.y = currentH / 2 + 0.5;
-          }
-          if (tRef.surfaceMesh) {
-            const turb = Math.sin(time * 6.0 + tIdx * 1.5) * 0.08;
-            tRef.surfaceMesh.position.y = currentH + 0.5 + turb;
-          }
-          if (tRef.gaugeFloat) tRef.gaugeFloat.position.y = currentH + 1.2;
+      // Surface auxiliary equipment and environmental animations (only when surface facility is visible)
+      if (surfaceGroup.visible) {
+        // Warning beacons flashing
+        warningBeacons.forEach(b => {
+          const intensity = 0.5 + Math.sin(time * 8) * 0.5;
+          if (b.children[0] && b.children[0].material) b.children[0].material.color.setHSL(0, 1.0, 0.35 + intensity * 0.25);
+          if (b.children[2]) b.children[2].intensity = intensity * 2.2;
         });
+
+        // Roaring flare flame
+        if (fl?.flareLight) {
+          fl.flareLight.intensity = 4.5 + Math.sin(time * 24) * 2.5;
+        }
+        if (fl?.flameMesh) {
+          fl.flameMesh.scale.set(1.2 + Math.sin(time * 16) * 0.3, 1.6 + Math.cos(time * 19) * 0.4, 1.2 + Math.sin(time * 14) * 0.3);
+        }
+        if (fl?.flameInner) {
+          fl.flameInner.scale.set(1.0 + Math.sin(time * 28) * 0.2, 1.3 + Math.cos(time * 22) * 0.3, 1.0 + Math.sin(time * 25) * 0.2);
+        }
+
+        // Drive Combustion Blower Fan & Meteorological Anemometer
+        if (sb?.steamStation?.userData?.fanRotor) {
+          sb.steamStation.userData.fanRotor.rotation.z = time * 18.0;
+        }
+        if (cs?.userData?.anemometer) {
+          cs.userData.anemometer.rotation.y = time * 6.5;
+        }
+
+        // Boiler steam exhaust smoke billows (throttled to alternate frames to reduce GPU buffer upload overhead)
+        if (frameCount % 2 === 0) {
+          const smPos = smokeGeo.attributes.position.array;
+          for (let i = 0; i < smokeCount; i++) {
+            const s = smokeSpeeds[i];
+            smPos[i * 3 + 1] += s.vy * 3.6; smPos[i * 3] += s.vx * 2.8; smPos[i * 3 + 2] += s.vz * 2.8;
+            if (smPos[i * 3 + 1] > 26) {
+              smPos[i * 3] = -16 + (Math.random() - 0.5) * 0.8;
+              smPos[i * 3 + 1] = 12;
+              smPos[i * 3 + 2] = -17 + (Math.random() - 0.5) * 0.8;
+            }
+          }
+          smokeGeo.attributes.position.needsUpdate = true;
+        }
+
+        // Storage tank dynamic level and inlet turbulence
+        if (tanksAsset && tanksAsset.userData && tanksAsset.userData.tanks) {
+          tanksAsset.userData.tanks.forEach((tRef, tIdx) => {
+            const qOilVal = parseFloat(currentMetricsRef.current.q_oil) || 0;
+            const fillRatio = Math.max(0.15, Math.min(0.95, 0.25 + (time * (qOilVal / 700)) % 0.65));
+            const maxLiquidH = 9.6;
+            const currentH = maxLiquidH * fillRatio;
+            if (tRef.liquidMesh) {
+              tRef.liquidMesh.scale.y = fillRatio;
+              tRef.liquidMesh.position.y = currentH / 2 + 0.5;
+            }
+            if (tRef.surfaceMesh) {
+              const turb = Math.sin(time * 6.0 + tIdx * 1.5) * 0.08;
+              tRef.surfaceMesh.position.y = currentH + 0.5 + turb;
+            }
+            if (tRef.gaugeFloat) tRef.gaugeFloat.position.y = currentH + 1.2;
+          });
+        }
       }
 
       // Camera smooth interpolation

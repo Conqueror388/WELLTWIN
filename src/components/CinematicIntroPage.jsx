@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useCallback } from 'react';
 import * as THREE from 'three';
 import { ArrowDown, Sun, Moon, ChevronRight } from 'lucide-react';
 
-export default function CinematicIntroPage({
+function CinematicIntroPage({
   onEnter,
   onProgress,
   darkMode = true,
@@ -137,13 +137,11 @@ export default function CinematicIntroPage({
     }
     gridGeo.computeVertexNormals();
 
-    const gridWireMat = new THREE.MeshStandardMaterial({
+    const gridWireMat = new THREE.MeshBasicMaterial({
       color: darkMode ? 0xf59e0b : 0xd97706,
       wireframe: true,
       transparent: true,
-      opacity: darkMode ? 0.35 : 0.45,
-      emissive: darkMode ? 0xb45309 : 0x7c2d12,
-      emissiveIntensity: 0.3
+      opacity: darkMode ? 0.35 : 0.45
     });
     const terrainGridMesh = new THREE.Mesh(gridGeo, gridWireMat);
     scene.add(terrainGridMesh);
@@ -174,6 +172,9 @@ export default function CinematicIntroPage({
     let animId;
     let lastTime = performance.now();
     let lastPct = -1;
+    let lastExitOp = -1;
+    let lastTextOp = -1;
+    let lastTranslateY = -999;
 
     const animate = (now) => {
       animId = requestAnimationFrame(animate);
@@ -221,17 +222,21 @@ export default function CinematicIntroPage({
         camera.updateProjectionMatrix();
       }
 
-      // UI Transitions - 2-3 contrast color architecture
+      // UI Transitions - Throttled to prevent DOM style invalidations
       const translateY = -p * 28;
       const textOp = p < 0.60 ? 1.0 : Math.max(0, 1.0 - (p - 0.60) / 0.30);
       const exitOp = p < 0.85 ? 1.0 : Math.max(0, (1.0 - p) / 0.15);
 
-      if (containerRef.current) {
+      if (containerRef.current && Math.abs(exitOp - lastExitOp) > 0.005) {
+        lastExitOp = exitOp;
         containerRef.current.style.opacity = exitOp.toFixed(3);
       }
 
-      if (titleBoxRef.current) {
-        titleBoxRef.current.style.transform = `translate3d(0, ${translateY.toFixed(1)}px, 0)`;
+      const roundedTY = Math.round(translateY * 2) / 2;
+      if (titleBoxRef.current && (roundedTY !== lastTranslateY || Math.abs(textOp - lastTextOp) > 0.01)) {
+        lastTranslateY = roundedTY;
+        lastTextOp = textOp;
+        titleBoxRef.current.style.transform = `translate3d(0, ${roundedTY}px, 0)`;
         titleBoxRef.current.style.opacity = textOp.toFixed(3);
       }
 
@@ -289,19 +294,30 @@ export default function CinematicIntroPage({
     };
   }, [darkMode]);
 
-  // Responsive mouse wheel
-  const handleWheel = useCallback((e) => {
-    e.preventDefault();
-    const delta = e.deltaY * 0.0013;
-    targetScrollRef.current = Math.max(0, Math.min(1.0, targetScrollRef.current + delta));
+  // Non-passive native wheel listener to prevent Chrome intervention warnings & enable smooth scrolling
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onNativeWheel = (e) => {
+      e.preventDefault();
+      isAutoAdvancing.current = false;
+      const delta = e.deltaY * 0.0013;
+      targetScrollRef.current = Math.max(0, Math.min(1.0, targetScrollRef.current + delta));
+    };
+
+    el.addEventListener('wheel', onNativeWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onNativeWheel);
   }, []);
 
   const touchStartY = useRef(0);
   const handleTouchStart = useCallback((e) => {
+    isAutoAdvancing.current = false;
     touchStartY.current = e.touches[0].clientY;
   }, []);
 
   const handleTouchMove = useCallback((e) => {
+    isAutoAdvancing.current = false;
     const deltaY = (touchStartY.current - e.touches[0].clientY) * 0.0035;
     targetScrollRef.current = Math.max(0, Math.min(1.0, targetScrollRef.current + deltaY));
     touchStartY.current = e.touches[0].clientY;
@@ -317,8 +333,10 @@ export default function CinematicIntroPage({
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+        isAutoAdvancing.current = false;
         targetScrollRef.current = Math.min(1.0, targetScrollRef.current + 0.22);
       } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+        isAutoAdvancing.current = false;
         targetScrollRef.current = Math.max(0, targetScrollRef.current - 0.22);
       } else if (e.key === 'Enter' || e.key === 'Escape') {
         handleFastForward();
@@ -331,7 +349,6 @@ export default function CinematicIntroPage({
   return (
     <div
       ref={containerRef}
-      onWheel={handleWheel}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       className={`fixed inset-0 z-50 flex flex-col justify-between select-none overflow-hidden font-sans transition-colors duration-300 ${
@@ -544,3 +561,5 @@ export default function CinematicIntroPage({
     </div>
   );
 }
+
+export default React.memo(CinematicIntroPage);

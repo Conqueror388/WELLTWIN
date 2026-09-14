@@ -2186,12 +2186,12 @@ function App() {
                     threeDWorkspaceRef.current.setXray(next);
                   }
                 }}
-                className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl shadow-xl backdrop-blur-xl transition-all cursor-pointer font-sans font-bold text-[11px] sm:text-xs min-h-[32px] sm:min-h-[38px] flex items-center gap-1.5 sm:gap-2 border ${
+                className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl shadow-xl transition-all cursor-pointer font-sans font-bold text-[11px] sm:text-xs min-h-[32px] sm:min-h-[38px] flex items-center gap-1.5 sm:gap-2 border ${
                   xrayExploded
                     ? 'bg-amber-500 text-zinc-950 border-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.5)] font-black'
                     : darkMode
-                      ? 'bg-zinc-950/90 border-zinc-800/80 text-zinc-200 hover:text-white hover:border-amber-500/50'
-                      : 'bg-white/95 border-slate-300 text-slate-800 shadow-md hover:border-amber-500'
+                      ? 'bg-zinc-950/95 border-zinc-800/80 text-zinc-200 hover:text-white hover:border-amber-500/50'
+                      : 'bg-white/98 border-slate-300 text-slate-800 shadow-md hover:border-amber-500'
                 }`}
                 title="Slide open casing, pump barrel, ball valves, and stuffing box seals"
               >
@@ -2204,8 +2204,8 @@ function App() {
               </button>
 
               {/* Zoom In & Zoom Out Quick Buttons */}
-              <div className={`flex items-center rounded-xl sm:rounded-2xl shadow-xl backdrop-blur-xl border p-0.5 ${
-                darkMode ? 'bg-zinc-950/90 border-zinc-800/80' : 'bg-white/95 border-slate-300'
+              <div className={`flex items-center rounded-xl sm:rounded-2xl shadow-xl border p-0.5 ${
+                darkMode ? 'bg-zinc-950/95 border-zinc-800/80' : 'bg-white/98 border-slate-300'
               }`}>
                 <button
                   onClick={() => {
@@ -2234,8 +2234,8 @@ function App() {
                     threeDWorkspaceRef.current.resetCamera();
                   }
                 }}
-                className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl shadow-xl backdrop-blur-xl transition-all cursor-pointer font-sans font-bold text-[11px] sm:text-xs min-h-[32px] sm:min-h-[38px] border ${
-                  darkMode ? 'bg-zinc-950/90 border-zinc-800/80 text-zinc-200 hover:text-white hover:border-amber-500/50' : 'bg-white/95 border-slate-300 text-slate-800 shadow-md hover:border-amber-500'
+                className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl shadow-xl transition-all cursor-pointer font-sans font-bold text-[11px] sm:text-xs min-h-[32px] sm:min-h-[38px] border ${
+                  darkMode ? 'bg-zinc-950/95 border-zinc-800/80 text-zinc-200 hover:text-white hover:border-amber-500/50' : 'bg-white/98 border-slate-300 text-slate-800 shadow-md hover:border-amber-500'
                 }`}
               >
                 <span className="hidden sm:inline">Restore Default View</span>
@@ -2245,7 +2245,7 @@ function App() {
 
             {/* Exploded / X-Ray Active Telemetry HUD Overlay with Component Focus Shortcuts */}
             {xrayExploded && (
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-auto flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-zinc-950/95 border border-amber-500/60 shadow-[0_0_30px_rgba(245,158,11,0.3)] backdrop-blur-xl text-xs font-mono">
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-auto flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-zinc-950/95 border border-amber-500/60 shadow-[0_0_30px_rgba(245,158,11,0.3)] text-xs font-mono">
                 <span className="flex h-2.5 w-2.5 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
@@ -2279,9 +2279,9 @@ function App() {
 
             {/* Collapsible Inspection drawer when an asset is clicked */}
             {selectedAsset && (
-              <div className={`absolute top-4 right-4 bottom-4 w-96 max-w-[calc(100vw-32px)] p-5 shadow-2xl backdrop-blur-2xl flex flex-col justify-between z-30 overflow-y-auto rounded-3xl border-2 slide-edge-right ${
+              <div className={`absolute top-4 right-4 bottom-4 w-96 max-w-[calc(100vw-32px)] p-5 shadow-2xl flex flex-col justify-between z-30 overflow-y-auto rounded-3xl border-2 slide-edge-right ${
                 darkMode 
-                  ? 'bg-zinc-950/95 border-amber-400/60 shadow-[0_0_35px_rgba(245,158,11,0.25)] text-zinc-100' 
+                  ? 'bg-zinc-950/98 border-amber-400/60 shadow-[0_0_35px_rgba(245,158,11,0.25)] text-zinc-100' 
                   : 'bg-white/98 border-amber-500 shadow-[0_10px_35px_rgba(180,83,9,0.20)] text-slate-800'
               }`}>
                 <div className="space-y-6">

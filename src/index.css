@@ -980,7 +980,7 @@ h1, h2, h3, h4, h5, h6,
   }
 }
 
-/* Floating Ambient Orbs - Hardware Accelerated & Layer Isolated */
+/* Floating Ambient Orbs - Hardware Accelerated & Layer Isolated (Static cached textures for 60-120 FPS WebGL compositing) */
 .ambient-orb-cyan {
   position: fixed;
   width: 500px;
@@ -989,11 +989,9 @@ h1, h2, h3, h4, h5, h6,
   background: radial-gradient(circle, rgba(14, 165, 233, 0.18) 0%, rgba(59, 130, 246, 0.05) 35%, rgba(59, 130, 246, 0) 70%);
   contain: strict;
   isolation: isolate;
-  will-change: transform;
   transform: translateZ(0);
   pointer-events: none;
   z-index: 0;
-  animation: floatOrb1 20s ease-in-out infinite;
 }
 
 .ambient-orb-amber {
@@ -1004,11 +1002,9 @@ h1, h2, h3, h4, h5, h6,
   background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.04) 35%, rgba(217, 119, 6, 0) 70%);
   contain: strict;
   isolation: isolate;
-  will-change: transform;
   transform: translateZ(0);
   pointer-events: none;
   z-index: 0;
-  animation: floatOrb2 25s ease-in-out infinite;
 }
 
 .ambient-orb-purple {
@@ -1019,11 +1015,9 @@ h1, h2, h3, h4, h5, h6,
   background: radial-gradient(circle, rgba(139, 92, 246, 0.14) 0%, rgba(99, 102, 241, 0.03) 35%, rgba(99, 102, 241, 0) 70%);
   contain: strict;
   isolation: isolate;
-  will-change: transform;
   transform: translateZ(0);
   pointer-events: none;
   z-index: 0;
-  animation: floatOrb1 28s ease-in-out infinite reverse;
 }
 
 /* Equalizer Bars */
