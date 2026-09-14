@@ -3933,7 +3933,7 @@ function App() {
           darkMode={darkMode}
           quality={graphicsQuality}
           visible={['twin', 'reservoir', 'optimization'].includes(activeTab)}
-          throttleFPS={activeTab === 'twin' ? 0 : 20}
+          throttleFPS={['twin', 'reservoir'].includes(activeTab) ? 0 : 25}
         />
       )}
       </Suspense>

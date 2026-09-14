@@ -665,6 +665,8 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
     });
 
     // Populate default material settings on userData with selective, high-performance shadow tagging
+    // Also build a flat interactive mesh list for ultra-fast pointer raycasting (eliminates 1,000+ object scene traversals per frame)
+    const interactiveMeshList = [];
     masterGroup.traverse(child => {
       if (child.isMesh && child.material) {
         child.userData.defaultTransparent = child.material.transparent !== undefined ? child.material.transparent : false;
@@ -680,6 +682,16 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
           child.castShadow = false;
         }
         child.receiveShadow = true;
+
+        // Register interactive named components
+        let p = child;
+        while (p && p !== masterGroup) {
+          if (p.userData && p.userData.name) {
+            interactiveMeshList.push(child);
+            break;
+          }
+          p = p.parent;
+        }
       }
     });
 
@@ -728,7 +740,7 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
       }
       
       const now = performance.now();
-      if (now - lastRaycastTime < 30) return;
+      if (now - lastRaycastTime < 45) return;
       lastRaycastTime = now;
 
       if (renderer.domElement) {
@@ -736,17 +748,18 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
         mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(masterGroup.children, true);
+        const intersects = raycaster.intersectObjects(interactiveMeshList, false);
         if (intersects.length > 0) {
           let target = intersects[0].object;
-          while (target.parent && target.parent !== masterGroup && !target.userData.name) { target = target.parent; }
-          if (target.userData.name) {
-            setHoveredEquipment(target.userData);
+          while (target && target !== masterGroup && !target.userData?.name) { target = target.parent; }
+          if (target && target.userData?.name) {
+            setHoveredEquipment(prev => (prev?.name === target.userData.name ? prev : target.userData));
             setTooltipPos({ x: e.clientX - rect.left + 15, y: e.clientY - rect.top + 15 });
-            document.body.style.cursor = 'pointer'; return;
+            document.body.style.cursor = 'pointer'; 
+            return;
           }
         }
-        setHoveredEquipment(null);
+        setHoveredEquipment(prev => (prev === null ? prev : null));
         document.body.style.cursor = isDragging ? 'grabbing' : 'grab';
       }
     };
@@ -1410,6 +1423,10 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
       camera.position.copy(currentCameraPos);
       camera.lookAt(currentTargetPos);
 
+      // Throttled SCADA coordinate readout update
+      if (frameCount % 6 === 0 && cameraReadoutRef.current) {
+        cameraReadoutRef.current.textContent = `CAM: X ${currentCameraPos.x.toFixed(1)} Y ${currentCameraPos.y.toFixed(1)} Z ${currentCameraPos.z.toFixed(1)}`;
+      }
 
       renderer.render(scene, camera);
     };
