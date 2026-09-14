@@ -88,6 +88,7 @@ import OilIndiaUpgradeHub from './components/OilIndiaUpgradeHub';
 import AIWhatIfOptimizer from './components/AIWhatIfOptimizer';
 import OfficialExecutiveDossier from './components/OfficialExecutiveDossier';
 import EngineeringFormulasModal from './components/EngineeringFormulasModal';
+import SparkAssistant from './components/SparkAssistant';
 
 const DynamicEChart = React.lazy(async () => {
   const [echartsModule, reactEchartsModule] = await Promise.all([
@@ -4042,6 +4043,14 @@ function App() {
         currentInputs={inputs}
         currentMetrics={currentMetrics}
         darkMode={darkMode}
+      />
+
+      {/* ── SPARK AI OPERATIONAL ASSISTANT (FLOATING BOTTOM RIGHT) ── */}
+      <SparkAssistant
+        currentInputs={inputs}
+        currentMetrics={currentMetrics}
+        darkMode={darkMode}
+        onNavigateTab={(tabId) => setActiveTab(tabId)}
       />
 
     </div>
