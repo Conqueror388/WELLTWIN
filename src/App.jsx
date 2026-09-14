@@ -2038,7 +2038,7 @@ function App() {
                     <Flame className="w-4 h-4 text-amber-400" />
                     Marx-Langenheim Radius
                   </h3>
-                  <span className="text-xs font-mono font-bold text-amber-400">{currentMetrics.heated_radius || 18.4}m</span>
+                  <span className="text-xs font-mono font-bold text-amber-400">{currentMetrics.heated_radius || 9.74}m</span>
                 </div>
                 <div className="h-28 w-full bg-slate-50 dark:bg-black/40 rounded-xl p-3 flex items-end justify-between gap-2  shadow-inner">
                   {[25, 45, 68, 85, 100].map((h, i) => (
@@ -2063,7 +2063,7 @@ function App() {
                 <div className="flex items-center justify-between py-2">
                   <div>
                     <div className="text-3xl sm:text-4xl font-mono font-bold text-slate-900 dark:text-white">{currentMetrics.viscosity || 420} <span className="text-sm text-zinc-200 dark:text-zinc-200 light:text-slate-700 font-normal">cP</span></div>
-                    <span className="text-xs font-mono text-amber-400 font-bold">−96.3% Viscosity Reduction</span>
+                    <span className="text-xs font-mono text-amber-400 font-bold">−{(100 - (currentMetrics.viscosity / 11500) * 100).toFixed(1)}% Viscosity Reduction</span>
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-medium font-mono text-zinc-300 dark:text-zinc-300 light:text-slate-600 block">Baseline:</span>
@@ -2071,7 +2071,7 @@ function App() {
                   </div>
                 </div>
                 <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden ">
-                  <div className="h-full bg-gradient-to-r from-amber-500 to-amber-300 rounded-full" style={{ width: `${Math.max(5, Math.min(100, (420 / 11500) * 100))}%` }} />
+                  <div className="h-full bg-gradient-to-r from-amber-500 to-amber-300 rounded-full" style={{ width: `${Math.max(2, Math.min(100, ((currentMetrics.viscosity || 492) / 11500) * 100))}%` }} />
                 </div>
               </div>
 
@@ -2371,7 +2371,7 @@ function App() {
                     <span className="text-xs text-zinc-200 dark:text-zinc-200 light:text-slate-700 font-mono font-semibold">RESERVOIR PROPAGATION & RHEOLOGY DYNAMICS</span>
                   </div>
                   <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold">
-                    Radius: {currentMetrics.heated_radius || '18.4'}m
+                    Radius: {currentMetrics.heated_radius || '9.74'}m
                   </span>
                 </div>
 
@@ -2736,7 +2736,7 @@ function App() {
                   <div className="grid grid-cols-4 gap-2 text-xs font-mono text-center">
                     <div className="glass-panel p-2 flex flex-col items-center">
                       <span className="text-zinc-300 dark:text-zinc-300 light:text-slate-600 block text-xs font-bold">POROSITY</span>
-                      <strong className="text-white block mt-0.5 text-xs font-bold">23%</strong>
+                      <strong className="text-white block mt-0.5 text-xs font-bold">28%</strong>
                     </div>
                     <div className="glass-panel p-2 flex flex-col items-center">
                       <span className="text-zinc-300 dark:text-zinc-300 light:text-slate-600 block text-xs font-bold">PERM</span>
@@ -3427,7 +3427,7 @@ function App() {
                 </div>
 
                 <div className="flex justify-between items-center text-xs font-mono pt-3 border-t border-white/[0.06] text-zinc-200 dark:text-zinc-200 light:text-slate-700">
-                  <span>Baseline SOR: <strong className="text-zinc-300">3.10</strong></span>
+                  <span>Baseline SOR: <strong className="text-zinc-300">0.40</strong></span>
                   <span>Current SOR: <strong className="text-amber-400">{currentMetrics.steamOilRatio}</strong></span>
                   <span>Energy Savings: <strong className="text-amber-400">18.4%</strong></span>
                 </div>
@@ -3707,7 +3707,7 @@ function App() {
                         { name: 'Injection Pressure', base: '850 psi', sim: `${inputs.injection_pressure} psi`, delta: `${inputs.injection_pressure - 850} psi`, active: inputs.injection_pressure !== 850 },
                         { name: 'Pumping Speed', base: '7.5 SPM', sim: `${inputs.SPM} SPM`, delta: `${(inputs.SPM - 7.5).toFixed(1)} SPM`, active: inputs.SPM !== 7.5 },
                         { name: 'Heavy Oil Yield', base: '25.0 bbl/d', sim: `${currentMetrics.q_oil} bbl/d`, delta: `${(currentMetrics.q_oil - 25.0).toFixed(1)} bbl/d`, active: currentMetrics.q_oil !== 25.0 },
-                        { name: 'Crude Viscosity', base: '420 cP', sim: `${currentMetrics.viscosity} cP`, delta: `${currentMetrics.viscosity - 420} cP`, active: currentMetrics.viscosity !== 420 }
+                        { name: 'Crude Viscosity', base: '11,500 cP', sim: `${currentMetrics.viscosity} cP`, delta: `${currentMetrics.viscosity - 11500} cP`, active: currentMetrics.viscosity !== 11500 }
                       ].map((row, idx) => (
                         <div key={idx} className="grid grid-cols-4 p-3 border-b border-zinc-900/30/50 items-center">
                           <span className="text-zinc-300 font-medium">{row.name}</span>

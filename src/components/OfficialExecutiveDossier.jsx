@@ -39,8 +39,8 @@ export default function OfficialExecutiveDossier({
         steam_consumption_pct: 100,
         spm: 7.5,
         stroke_length_in: 100,
-        steam_temp_c: 215,
-        pprl_lbs: 14800,
+        steam_temp_c: 220,
+        pprl_lbs: 12500,
         gearbox_torque_pct: 68.5
       },
       ai_pareto_optimized: {
@@ -192,7 +192,7 @@ export default function OfficialExecutiveDossier({
                 <span>1. Executive Operations & Reservoir State</span>
               </h4>
               <p className="text-xs sm:text-sm text-zinc-300 print:text-slate-700 leading-relaxed font-sans">
-                Wellbore <strong>{wellId}</strong> extracts heavy viscous crude oil (16.5° API) from the Jodhpur Sandstone reservoir at a true vertical depth of <strong>1,180 meters</strong>. The reservoir formation exhibits an in-situ dead oil viscosity of approximately <strong>11,200 cP</strong> under virgin reservoir conditions (45°C). Enhanced extraction relies on <strong>Cyclic Steam Stimulation (CSS)</strong> to induce thermal viscosity decay down to mobile limits, coupled with an authentic surface <strong>Sucker Rod Pumping (SRP)</strong> artificial lift unit.
+                Wellbore <strong>{wellId}</strong> extracts heavy viscous crude oil (16.5° API) from the Jodhpur Sandstone reservoir at a true vertical depth of <strong>1,180 meters</strong>. The reservoir formation exhibits an in-situ dead oil viscosity of approximately <strong>11,500 cP</strong> under virgin reservoir conditions (45°C). Enhanced extraction relies on <strong>Cyclic Steam Stimulation (CSS)</strong> to induce thermal viscosity decay down to mobile limits, coupled with an authentic surface <strong>Sucker Rod Pumping (SRP)</strong> artificial lift unit.
               </p>
             </div>
 
@@ -323,7 +323,7 @@ export default function OfficialExecutiveDossier({
 
                     {/* Points & Annotations */}
                     <circle cx="280" cy="48" r="3" fill="#ef4444" />
-                    <text x="282" y="42" fill="#ef4444" fontSize="8" fontWeight="bold" fontFamily="monospace">PPRL: 14,200 lbs</text>
+                    <text x="282" y="42" fill="#ef4444" fontSize="8" fontWeight="bold" fontFamily="monospace">PPRL: 12,500 lbs</text>
 
                     <circle cx="70" cy="105" r="3" fill="#10b981" />
                     <text x="72" y="125" fill="#10b981" fontSize="8" fontWeight="bold" fontFamily="monospace">MPRL: 4,800 lbs</text>
@@ -395,16 +395,16 @@ export default function OfficialExecutiveDossier({
 
                     {/* In-Situ Point (Virgin Formation) */}
                     <circle cx="45" cy="22" r="3.5" fill="#ef4444" />
-                    <text x="52" y="24" fill="#ef4444" fontSize="8" fontWeight="bold" fontFamily="monospace">Virgin: 11,200 cP</text>
+                    <text x="52" y="24" fill="#ef4444" fontSize="8" fontWeight="bold" fontFamily="monospace">Virgin: 11,500 cP</text>
 
-                    {/* AI Pareto Operating Point (242°C) */}
-                    <circle cx="270" cy="133" r="4" fill="#10b981" />
-                    <text x="210" y="122" fill="#10b981" fontSize="8" fontWeight="bold" fontFamily="monospace">AI Pareto: 42 cP (242°C)</text>
+                    {/* AI Pareto Operating Point (220°C) */}
+                    <circle cx="250" cy="133" r="4" fill="#10b981" />
+                    <text x="175" y="122" fill="#10b981" fontSize="8" fontWeight="bold" fontFamily="monospace">Optimized: ~492 cP (115°C)</text>
                   </svg>
                 </div>
 
                 <div className="flex justify-between items-center text-[10px] font-mono text-zinc-400 print:text-slate-600 mt-2 px-1">
-                  <span>Viscosity Drop: 266× Reduction</span>
+                  <span>Viscosity Drop: ~23× Reduction (11,500 → 492 cP)</span>
                   <span className="text-emerald-400 print:text-emerald-700 font-bold">Optimal Mobility Ratio</span>
                 </div>
               </div>
