@@ -32,7 +32,7 @@ export default function DynamicViscositySensitivityEngine({ inputs = {}, darkMod
   const spm = parseFloat(inputs.SPM) || 7.5;
 
   // Calculate Arrhenius dynamic curve and parameter contributions
-  const { viscosityDropPct, mobilityRatio, curveData, activePoint } = useMemo(() => {
+  const { calculatedViscosity = 120, baselineViscosity = 11500, viscosityDropPct, mobilityRatio, curveData, activePoint } = useMemo(() => {
     const baseVisc = 11500; // cP at 45°C cold reservoir baseline
     const T_kelvin = steamT + 273.15;
     const T0_kelvin = 45 + 273.15;
@@ -73,6 +73,8 @@ export default function DynamicViscositySensitivityEngine({ inputs = {}, darkMod
       activePoint: [steamT, calcVisc]
     };
   }, [steamT, soakDays, injPressure, spm]);
+
+  const darcyFluxMultiplier = (baselineViscosity / Math.max(1, calculatedViscosity)).toFixed(1);
 
   return (
     <div className="glass-panel p-6 space-y-6 page-transition-wrap">
@@ -258,6 +260,75 @@ export default function DynamicViscositySensitivityEngine({ inputs = {}, darkMod
           </div>
         </div>
 
+      </div>
+
+      {/* ── Dynamic Capillary Darcy Flow Simulator ── */}
+      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-950/70 border border-slate-200 dark:border-white/10 space-y-3 slide-edge-bottom stagger-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 dark:border-zinc-800/80 pb-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-800 dark:text-amber-400">
+              Micro-Capillary Matrix Flow Simulator (Darcy's Law: Q = -k·A·ΔP / μ·L)
+            </span>
+          </div>
+          <span className="text-[11px] font-mono font-bold text-emerald-500 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+            ⚡ {darcyFluxMultiplier}× Higher Laminar Matrix Mobility
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+          {/* Tube 1: Cold Reservoir In-Situ (45°C, 11,500 cP) */}
+          <div className="p-3.5 rounded-xl bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 flex items-center gap-3.5 shadow-sm">
+            {/* Visual Droplet Tube */}
+            <div className="relative w-9 h-24 rounded-full bg-slate-200 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700/80 overflow-hidden flex flex-col justify-between items-center py-1 flex-shrink-0 shadow-inner">
+              <div className="w-6 h-2 rounded-full bg-slate-400 dark:bg-zinc-800 border-b border-zinc-700" />
+              {/* Sluggish Tar Drop (8.5s slow descent) */}
+              <div
+                className="w-3.5 h-4 rounded-full bg-gradient-to-b from-zinc-700 to-black border border-zinc-600 viscosity-drip-bead shadow-sm"
+                style={{ animationDuration: '8.5s' }}
+              />
+              <div className="w-7 h-3 rounded-b-full bg-slate-400 dark:bg-zinc-900 border-t border-zinc-800" />
+            </div>
+            <div className="flex-1 min-w-0 space-y-1">
+              <div className="flex justify-between items-center text-xs font-mono">
+                <span className="text-slate-600 dark:text-zinc-400 font-bold uppercase">Cold Matrix In-Situ</span>
+                <span className="text-slate-600 dark:text-zinc-400 font-bold">45°C</span>
+              </div>
+              <div className="text-base font-mono font-bold text-slate-800 dark:text-zinc-200">11,500 cP</div>
+              <div className="text-[11px] font-mono text-slate-500 dark:text-zinc-400 leading-tight">
+                Immobile bitumen. Near-zero matrix flow without cyclic steam injection.
+              </div>
+            </div>
+          </div>
+
+          {/* Tube 2: Thermally Stimulated Heavy Crude (Steam T) */}
+          <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-3.5 shadow-sm">
+            {/* Visual Droplet Tube */}
+            <div className="relative w-9 h-24 rounded-full bg-slate-200 dark:bg-zinc-950 border border-amber-500/40 overflow-hidden flex flex-col justify-between items-center py-1 flex-shrink-0 shadow-inner">
+              <div className="w-6 h-2 rounded-full bg-amber-600/80 border-b border-amber-400/50" />
+              {/* Free-flowing drop (duration scaled to calculated viscosity: 0.45s to 3.5s) */}
+              <div
+                className="w-3.5 h-4 rounded-full bg-gradient-to-b from-amber-400 to-amber-600 border border-amber-300 viscosity-drip-bead shadow-[0_0_8px_rgba(245,158,11,0.6)]"
+                style={{
+                  animationDuration: `${Math.max(0.45, Math.min(3.5, (calculatedViscosity / 11500) * 8.5)).toFixed(2)}s`
+                }}
+              />
+              <div className="w-7 h-3 rounded-b-full bg-amber-950/80 border-t border-amber-500/30" />
+            </div>
+            <div className="flex-1 min-w-0 space-y-1">
+              <div className="flex justify-between items-center text-xs font-mono">
+                <span className="text-amber-500 font-bold uppercase">Stimulated Oil Inflow</span>
+                <span className="text-amber-500 font-bold">{steamT}°C</span>
+              </div>
+              <div className="text-base font-mono font-bold text-amber-500 dark:text-amber-300">
+                {calculatedViscosity.toLocaleString()} cP
+              </div>
+              <div className="text-[11px] font-mono text-slate-600 dark:text-amber-200/80 leading-tight">
+                High-temperature Arrhenius breakdown unlocks rapid drainage to horizontal slotted liner.
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -44,6 +44,7 @@ const playHoloSound = (type = 'click') => {
 import CinematicIntroPage from './components/CinematicIntroPage';
 import EngineerAdminLogin, { ENTERPRISE_PERSONAS } from './components/EngineerAdminLogin';
 import React, {  useState, useEffect, useRef, useMemo, useCallback , Suspense } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Activity, 
   Settings, 
@@ -184,88 +185,202 @@ function AnimatedNumber({ value, suffix = '', decimals = 0 }) {
 
 function DynamometerCard({ fillage, rodLoad, SPM, strokeLength }) {
   const loadOffset = Math.max(-25, Math.min(25, (rodLoad - 10000) / 300));
-  const wScale = strokeLength / 100;
-  const hScale = 1.0 + (SPM - 7.5) * 0.05;
+  const wScale = (strokeLength || 100) / 100;
+  const hScale = 1.0 + ((SPM || 7.5) - 7.5) * 0.05;
   
   const xStart = 40 + (1 - wScale) * 20;
   const xEnd = 200 - (1 - wScale) * 20;
   const yTop = 45 - loadOffset - (hScale - 1) * 10;
   const yBottom = 115 - loadOffset + (hScale - 1) * 10;
   
-  const fillFraction = fillage / 100;
-  let pointsStr = "";
-  if (fillFraction >= 0.85) {
-    pointsStr = `${xStart},${yBottom} ${xStart},${yTop} ${xEnd},${yTop} ${xEnd},${yBottom}`;
-  } else {
-    const dropX = xStart + (xEnd - xStart) * (1 - fillFraction);
-    pointsStr = `${xStart},${yTop + (yBottom - yTop) * 0.5} ${xStart},${yTop} ${xEnd},${yTop} ${xEnd},${yBottom} ${dropX},${yBottom}`;
-  }
+  const fillFraction = (fillage ?? 100) / 100;
+  const isFluidPound = fillFraction < 0.85;
+  const dropX = xStart + (xEnd - xStart) * (1 - fillFraction);
   
+  // Real-time kinematic stroke period (60 / SPM seconds, clamped for smooth responsive HUD)
+  const effectiveSPM = Math.max(1, SPM || 7.5);
+  const strokeDuration = Math.max(1.5, Math.min(7.5, (60 / effectiveSPM).toFixed(1)));
+  const isOverload = rodLoad > 13800;
+  const strokeColor = isOverload ? "#f43f5e" : isFluidPound ? "#f59e0b" : "#3b82f6";
+  const glowColor = isOverload ? "rgba(244, 63, 94, 0.15)" : isFluidPound ? "rgba(245, 158, 11, 0.12)" : "rgba(59, 130, 246, 0.12)";
+
+  // SVG closed path representation of the API 11E dynamometer card
+  const pathD = !isFluidPound
+    ? `M ${xStart} ${yBottom} L ${xStart} ${yTop} L ${xEnd} ${yTop} L ${xEnd} ${yBottom} Z`
+    : `M ${xStart} ${yTop + (yBottom - yTop) * 0.5} L ${xStart} ${yTop} L ${xEnd} ${yTop} L ${xEnd} ${yBottom} L ${dropX} ${yBottom} Z`;
+
   return (
-    <div className="bg-slate-50 dark:bg-black/40  rounded-xl text-slate-800 dark:text-zinc-100 shadow-sm p-4 border-0 rounded-2xl flex flex-col items-center gap-2">
-      <span className="text-[12px] text-zinc-300 dark:text-zinc-300 light:text-slate-600 font-mono font-bold uppercase tracking-wider">Dynamometer Card (Load vs Position)</span>
+    <div className="bg-slate-50 dark:bg-black/40 rounded-2xl text-slate-800 dark:text-zinc-100 shadow-sm p-3.5 border border-slate-200 dark:border-white/5 flex flex-col items-center gap-2 relative overflow-hidden w-full">
+      <div className="flex items-center justify-between w-full px-1">
+        <span className="text-[11px] text-zinc-400 font-mono font-bold uppercase tracking-wider">
+          Dynamometer Card (Load vs Position)
+        </span>
+        <span className="text-[10px] font-mono font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/20 flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-ping" />
+          {effectiveSPM.toFixed(1)} SPM • {strokeDuration}s Cycle
+        </span>
+      </div>
+
       <div className="relative w-full h-32 flex items-center justify-center">
-        <svg width="240" height="120" className="overflow-visible">
-          <line x1="20" y1="20" x2="220" y2="20" stroke="#222" strokeDasharray="3,3" />
-          <line x1="20" y1="65" x2="220" y2="65" stroke="#222" strokeDasharray="3,3" />
-          <line x1="20" y1="110" x2="220" y2="110" stroke="#222" strokeDasharray="3,3" />
-          <line x1="40" y1="10" x2="40" y2="120" stroke="#222" strokeDasharray="3,3" />
-          <line x1="120" y1="10" x2="120" y2="120" stroke="#222" strokeDasharray="3,3" />
-          <line x1="200" y1="10" x2="200" y2="120" stroke="#222" strokeDasharray="3,3" />
+        <svg width="240" height="120" className="overflow-visible select-none">
+          {/* Diagnostic Grid lines */}
+          <line x1="20" y1="20" x2="220" y2="20" stroke="#27272a" strokeDasharray="3,3" />
+          <line x1="20" y1="65" x2="220" y2="65" stroke="#27272a" strokeDasharray="3,3" />
+          <line x1="20" y1="110" x2="220" y2="110" stroke="#27272a" strokeDasharray="3,3" />
+          <line x1="40" y1="10" x2="40" y2="120" stroke="#27272a" strokeDasharray="3,3" />
+          <line x1="120" y1="10" x2="120" y2="120" stroke="#27272a" strokeDasharray="3,3" />
+          <line x1="200" y1="10" x2="200" y2="120" stroke="#27272a" strokeDasharray="3,3" />
           
-          <polygon
-            points={pointsStr}
-            fill="rgba(59, 130, 246, 0.08)"
-            stroke={rodLoad > 14000 ? "#f43f5e" : fillFraction < 0.85 ? "#f59e0b" : "#3b82f6"}
+          {/* Card Polygon Fill & Stroke */}
+          <path
+            d={pathD}
+            fill={glowColor}
+            stroke={strokeColor}
             strokeWidth="2.5"
             strokeLinejoin="round"
             className="transition-all duration-300"
           />
-          
-          <text x="15" y="15" fill="#666" fontSize="7" fontFamily="monospace">LOAD (LBS)</text>
-          <text x="180" y="118" fill="#666" fontSize="7" fontFamily="monospace">POSITION</text>
+
+          {/* Faint motion trail along polygon */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke="#38bdf8"
+            strokeWidth="1"
+            strokeDasharray="4 6"
+            strokeOpacity="0.35"
+          />
+
+          {/* Real-time Hardware-Accelerated Laser Tracer Bead orbiting with SPM frequency */}
+          <circle r="4.5" fill="#38bdf8" className="tracer-laser-point">
+            <animateMotion
+              dur={`${strokeDuration}s`}
+              repeatCount="indefinite"
+              path={pathD}
+            />
+          </circle>
+
+          {/* Ambient Glow Aura around the tracer */}
+          <circle r="8" fill="#38bdf8" opacity="0.3">
+            <animateMotion
+              dur={`${strokeDuration}s`}
+              repeatCount="indefinite"
+              path={pathD}
+            />
+          </circle>
+
+          {/* Fluid Pound Shockpoint Ping at Drop Position */}
+          {isFluidPound && (
+            <g transform={`translate(${dropX}, ${yBottom})`}>
+              <circle r="6" fill="none" stroke="#f59e0b" strokeWidth="1.5" className="animate-ping" />
+              <circle r="2.5" fill="#f59e0b" />
+            </g>
+          )}
+
+          <text x="15" y="15" fill="#71717a" fontSize="7" fontFamily="monospace">LOAD (LBS)</text>
+          <text x="180" y="118" fill="#71717a" fontSize="7" fontFamily="monospace">POSITION</text>
         </svg>
       </div>
-      <div className="flex justify-between w-full text-[12px] font-mono text-zinc-300 dark:text-zinc-300 light:text-slate-600 px-2">
-        <span>0% (Bottom)</span>
-        <span>100% (Top)</span>
+
+      <div className="flex justify-between w-full text-[11px] font-mono text-zinc-400 px-1 pt-1 border-t border-zinc-800/40">
+        <span className="flex items-center gap-1">
+          <span className="text-sky-400">◄</span> Downstroke (0%)
+        </span>
+        {isFluidPound && (
+          <span className="text-amber-400 font-bold flex items-center gap-1">
+            ⚡ Fluid Pound Delay
+          </span>
+        )}
+        <span className="flex items-center gap-1">
+          Upstroke (100%) <span className="text-sky-400">►</span>
+        </span>
       </div>
     </div>
   );
 }
 
-function ProcessFlowStrip({ darkMode = true }) {
+function ProcessFlowStrip({ darkMode = true, currentPhase = 'Production', q_oil = 34.5, steamRate = 25 }) {
+  const phaseLower = (currentPhase || '').toLowerCase();
+  const isSteamInjecting = phaseLower.includes('steam') || phaseLower.includes('inject');
+  const isSoaking = phaseLower.includes('soak');
+  const isProducing = phaseLower.includes('prod') || (!isSteamInjecting && !isSoaking);
+
+  const steps = [
+    { icon: Flame, color: 'text-orange-500', name: 'Steam Generator' },
+    { icon: ArrowDownCircle, color: 'text-amber-400', name: 'Injection Well' },
+    { icon: Layers, color: 'text-amber-500', name: 'Heated Reservoir' },
+    { icon: ArrowUpCircle, color: 'text-orange-500', name: 'Production Well' },
+    { icon: Activity, color: 'text-amber-500', name: 'Separator' },
+    { icon: Database, color: 'text-zinc-400', name: 'Storage Tank' }
+  ];
+
   return (
     <div className={`w-full rounded-2xl p-3 flex items-center justify-between font-sans shadow-lg overflow-x-auto gap-3 border ${
       darkMode ? 'glass-panel border-zinc-800/80 text-zinc-300' : 'bg-white border-slate-200 text-slate-800 shadow-sm'
     }`}>
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2.5 flex-shrink-0">
         <span className="text-[#3a86f5] font-bold text-xs uppercase tracking-widest block leading-none font-mono">Process Flow</span>
-        <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-radar-online" />
+        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border flex items-center gap-1.5 bg-amber-500/10 text-amber-400 border-amber-500/30">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+          {isSteamInjecting ? `STEAM INJECTION (${steamRate} t/d)` : isSoaking ? 'RESERVOIR SOAK PHASE' : `PRODUCTION (${q_oil.toFixed(1)} bbl/d)`}
+        </span>
       </div>
       
-      <div className={`flex items-center gap-2 flex-grow justify-center text-[12px] font-semibold whitespace-nowrap overflow-x-auto select-none ${
+      <div className={`flex items-center gap-1.5 flex-grow justify-center text-[12px] font-semibold whitespace-nowrap overflow-x-auto select-none ${
         darkMode ? 'text-zinc-200 dark:text-zinc-200 light:text-slate-700' : 'text-slate-600'
       }`}>
-        {[
-          { icon: Flame, color: 'text-orange-500', name: 'Steam Generator' },
-          { icon: ArrowDownCircle, color: 'text-amber-400', name: 'Injection Well' },
-          { icon: Layers, color: 'text-amber-500', name: 'Heated Reservoir' },
-          { icon: ArrowUpCircle, color: 'text-orange-500', name: 'Production Well' },
-          { icon: Activity, color: 'text-amber-500', name: 'Separator' },
-          { icon: Database, color: 'text-zinc-400', name: 'Storage Tank' }
-        ].map((step, idx, arr) => {
+        {steps.map((step, idx, arr) => {
           const IconComp = step.icon;
+          
+          // Determine if conduit between this step and the next is flowing
+          let isConduitFlowing = false;
+          let isSteamConduit = false;
+
+          if (idx === 0) { // Steam Gen -> Inj Well
+            isConduitFlowing = isSteamInjecting;
+            isSteamConduit = true;
+          } else if (idx === 1) { // Inj Well -> Reservoir
+            isConduitFlowing = isSteamInjecting || isSoaking;
+            isSteamConduit = isSteamInjecting;
+          } else if (idx === 2) { // Reservoir -> Prod Well
+            isConduitFlowing = isProducing;
+          } else if (idx === 3) { // Prod Well -> Separator
+            isConduitFlowing = isProducing;
+          } else if (idx === 4) { // Separator -> Storage
+            isConduitFlowing = isProducing;
+          }
+
           return (
             <React.Fragment key={step.name}>
-              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-colors shadow-sm ${
-                darkMode ? 'bg-slate-50 dark:bg-black/40  rounded-xl text-slate-800 dark:text-zinc-100 shadow-sm border-zinc-800 hover:border-zinc-700 text-zinc-300' : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-800'
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all shadow-sm ${
+                darkMode ? 'bg-slate-50 dark:bg-black/40 rounded-xl text-slate-800 dark:text-zinc-100 shadow-sm border-zinc-800 hover:border-zinc-700 text-zinc-300' : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-800'
               }`}>
                 <IconComp className={`w-4 h-4 ${step.color}`} />
                 <span>{step.name}</span>
               </div>
+              
               {idx < arr.length - 1 && (
-                <span className={`text-sm font-bold arrow-shimmer ${darkMode ? 'text-zinc-300 dark:text-zinc-300 light:text-slate-600' : 'text-slate-400'}`}>→</span>
+                <div className="flex items-center px-1 flex-shrink-0" title={isConduitFlowing ? (isSteamConduit ? 'Active Steam Conduit' : 'Active Heavy Crude Conduit') : 'Conduit Idle'}>
+                  <div className="relative w-8 h-2 rounded-full overflow-hidden bg-zinc-800/90 border border-zinc-700/60 flex items-center justify-center shadow-inner">
+                    <div
+                      className={`absolute inset-0 ${isConduitFlowing ? 'flow-conduit-active' : 'opacity-25'}`}
+                      style={{
+                        backgroundImage: isConduitFlowing
+                          ? isSteamConduit
+                            ? 'linear-gradient(90deg, #f97316 0%, #f97316 50%, #ea580c 50%, #ea580c 100%)'
+                            : 'linear-gradient(90deg, #f59e0b 0%, #f59e0b 50%, #d97706 50%, #d97706 100%)'
+                          : undefined,
+                        backgroundSize: '12px 100%'
+                      }}
+                    />
+                    {isConduitFlowing && (
+                      <div
+                        className="w-2 h-1.5 rounded-full flow-bead-pulse absolute"
+                        style={{ backgroundColor: isSteamConduit ? '#ffedd5' : '#fef08a' }}
+                      />
+                    )}
+                  </div>
+                </div>
               )}
             </React.Fragment>
           );
@@ -1286,29 +1401,45 @@ function App() {
       {/* Dynamic Laser Scanline Sweeping Beam across UI */}
       <div className="holo-scanline-beam" />
 
-      {/* Industrial SCADA Safety Alarm Notification Banner */}
-      {scadaAlert && (
-        <div className={`w-full px-6 py-2 z-30 flex items-center justify-between text-xs font-mono font-bold border-b transition-all ${
-          scadaAlert.type === 'danger'
-            ? 'bg-zinc-950/90 border-amber-500/80 text-amber-300 shadow-[0_0_25px_rgba(245,158,11,0.3)] animate-pulse'
-            : 'bg-amber-950/90 border-amber-500/80 text-amber-300 shadow-[0_0_25px_rgba(245,158,11,0.25)]'
-        }`}>
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <AlertTriangle className={`w-4 h-4 flex-shrink-0 ${'text-amber-400 animate-pulse'}`} />
-            <span className="uppercase tracking-wider font-black whitespace-nowrap">{scadaAlert.title}:</span>
-            <span className="font-sans font-normal text-white truncate">{scadaAlert.desc}</span>
-          </div>
-          <button
-            onClick={() => {
-              setScadaAlert(null);
-              playHoloSound('click');
-            }}
-            className="px-3 py-1 rounded-lg bg-black/50 hover:bg-black/80 border border-white/20 text-zinc-200 text-[11px] cursor-pointer whitespace-nowrap ml-4 transition-colors"
+      {/* Industrial SCADA Safety Alarm Notification Banner with Hardware-Accelerated Hazard Beacon */}
+      <AnimatePresence>
+        {scadaAlert && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className={`w-full px-6 py-2 z-30 flex items-center justify-between text-xs font-mono font-bold border-b transition-all relative overflow-hidden ${
+              scadaAlert.type === 'danger'
+                ? 'bg-zinc-950/95 border-rose-500/80 text-rose-300 shadow-[0_0_25px_rgba(244,63,94,0.35)]'
+                : 'bg-zinc-950/95 border-amber-500/80 text-amber-300 shadow-[0_0_25px_rgba(245,158,11,0.3)]'
+            }`}
           >
-            Acknowledge
-          </button>
-        </div>
-      )}
+            {/* Background Laser Radar Scanner Beam */}
+            <div className="radar-scanner-sweep" />
+
+            <div className="flex items-center gap-3 overflow-hidden z-10">
+              {/* Dual Sonar Pulse Rings */}
+              <div className="relative flex items-center justify-center w-5 h-5 flex-shrink-0">
+                <span className={`radar-sonar-ring ${scadaAlert.type === 'danger' ? 'bg-rose-500' : 'bg-amber-400'}`} />
+                <AlertTriangle className={`w-4 h-4 flex-shrink-0 ${scadaAlert.type === 'danger' ? 'text-rose-400' : 'text-amber-400'} relative z-10`} />
+              </div>
+              <span className="uppercase tracking-wider font-black whitespace-nowrap text-white">{scadaAlert.title}:</span>
+              <span className="font-sans font-normal text-zinc-200 truncate">{scadaAlert.desc}</span>
+            </div>
+
+            <button
+              onClick={() => {
+                setScadaAlert(null);
+                playHoloSound('click');
+              }}
+              className="px-3 py-1 rounded-lg bg-black/60 hover:bg-black/90 border border-white/20 text-zinc-200 hover:text-white text-[11px] cursor-pointer whitespace-nowrap ml-4 transition-all z-10 shadow-sm"
+            >
+              Acknowledge
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Live SCADA Telemetry Streaming Ticker Bar */}
       <div className={`w-full border-b text-xs font-medium font-mono py-1 overflow-hidden z-20 flex items-center shadow-inner ${
@@ -1348,7 +1479,7 @@ function App() {
       >
         <TwinErrorBoundary title="OPERATIONAL TAB GATEWAY">
         {activeTab === 'maintenance' && (
-          <div className="space-y-6 page-transition-wrap">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: "easeOut" }} className="space-y-6 page-transition-wrap">
             {/* ── 1. Header & Role Permissions Deck ── */}
             <div className="glass-panel p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 slide-edge-top">
               <div>
@@ -1636,11 +1767,11 @@ function App() {
                 <span>SCADA State: Connected</span>
               </div>
             </footer>
-          </div>
+          </motion.div>
         )}
 
         {activeTab === 'validation' && (
-          <div className="space-y-6 page-transition-wrap">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: "easeOut" }} className="space-y-6 page-transition-wrap">
             {/* Header */}
             <div className="glass-panel p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 slide-edge-top">
               <div>
@@ -1749,11 +1880,11 @@ function App() {
                 <span>SCADA State: Connected</span>
               </div>
             </footer>
-          </div>
+          </motion.div>
         )}
 
         {activeTab === 'reports' && (
-          <div className="space-y-6 page-transition-wrap">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: "easeOut" }} className="space-y-6 page-transition-wrap">
             {/* Header */}
             <div className="glass-panel p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 slide-edge-top">
               <div>
@@ -1997,7 +2128,7 @@ function App() {
                 <span>SCADA State: {connectionState === 'normal' ? 'Connected' : 'Offline'}</span>
               </div>
             </footer>
-          </div>
+          </motion.div>
         )}
 
         {/* OIL INDIA PORTAL MODERNIZATION & ARCHITECTURE UPGRADE HUB */}
@@ -2007,7 +2138,7 @@ function App() {
 
         {/* PAGE 1: SOLUTION SUMMARY & OVERVIEW — EXECUTIVE EOR COMMAND DECK */}
         {activeTab === 'overview' && (
-          <div className="space-y-6 page-transition-wrap">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: "easeOut" }} className="space-y-6 page-transition-wrap">
             
             {/* ── Top Telemetry KPI Ribbon ── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -2194,14 +2325,23 @@ function App() {
               </div>
             </div>
 
-          </div>
+          </motion.div>
         )}
 
         {/* PAGE 2: DIGITAL TWIN MODEL — always mounted to preserve WebGL context */}
         <div style={{ display: activeTab === 'twin' ? '' : 'none' }} className="w-full flex-1 min-h-0 flex flex-col gap-3">
-          <div key={`twin-pfs-${activeTab}`} className="slide-edge-top">
-            <ProcessFlowStrip darkMode={darkMode} />
-          </div>
+            <ProcessFlowStrip 
+              darkMode={darkMode}
+              currentPhase={
+                inputs.cycle_day <= inputs.injection_duration 
+                  ? 'Steam Injection' 
+                  : inputs.cycle_day <= inputs.injection_duration + inputs.soak_duration 
+                    ? 'Soak Phase' 
+                    : 'Production Phase'
+              }
+              q_oil={currentMetrics?.q_oil || 0}
+              steamRate={inputs?.steam_rate || 25}
+            />
           
           <div className={`relative w-full h-[580px] lg:h-[680px] min-h-[500px] rounded-3xl overflow-hidden shadow-2xl border transition-colors slide-edge-bottom ${
             darkMode ? 'bg-[#080b13] border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)]' : 'bg-white border-slate-300 shadow-2xl'
@@ -2373,7 +2513,7 @@ function App() {
 
         {/* PAGE 3: SIMULATION SANDBOX — always mounted to preserve WebGL context */}
         {activeTab === 'sim' && (
-          <div className="space-y-6 page-transition-wrap">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: "easeOut" }} className="space-y-6 page-transition-wrap">
             
             {/* Top Section: Full-Width 8-Parameter Precision Industrial SCADA Deck */}
             <IndustrialSimulationController
@@ -2639,12 +2779,12 @@ function App() {
               </div>
 
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* PAGE 4: RESERVOIR & SUBSURFACE */}
         {activeTab === 'reservoir' && (
-          <div className="space-y-6 page-transition-wrap">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: "easeOut" }} className="space-y-6 page-transition-wrap">
             {/* ── Dynamic Thermodynamic Viscosity Sensitivity Engine ── */}
             <div className="slide-edge-top">
               <DynamicViscositySensitivityEngine inputs={localInputs} currentMetrics={currentMetrics} darkMode={darkMode} />
@@ -2786,12 +2926,12 @@ function App() {
               </div>
 
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* PAGE 5: SURFACE OPERATIONS */}
         {activeTab === 'surface' && (
-          <div className="space-y-6 page-transition-wrap">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: "easeOut" }} className="space-y-6 page-transition-wrap">
             {/* Top Section: Full-Width 6-Axis Industrial SCADA Scenario Optimization Deck */}
             <IndustrialSimulationController
               mode="scenario"
@@ -3072,12 +3212,12 @@ function App() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* PAGE 6: TRENDS & ANALYTICS */}
         {activeTab === 'analytics' && (
-          <div className="space-y-6 page-transition-wrap">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: "easeOut" }} className="space-y-6 page-transition-wrap">
               
                           {/* Filter toolbar */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 glass-panel p-4 rounded-3xl slide-edge-top">
@@ -3465,12 +3605,12 @@ function App() {
               </div>
 
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* PAGE 7: SRP PERFORMANCE — DENSE, EFFICIENT, COMPACT ENGINEERING GRID */}
         {activeTab === 'optimization' && (
-          <div className="space-y-6 page-transition-wrap">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: "easeOut" }} className="space-y-6 page-transition-wrap">
             {/* Live What-If AI Optimizer Bar & Predictive Health */}
             <div className="slide-edge-top">
               <AIWhatIfOptimizer
@@ -3678,13 +3818,12 @@ function App() {
               </div>
 
             </div>
-
-          </div>
+          </motion.div>
         )}
 
         {/* PAGE 8: DATA SOURCES */}
         {activeTab === 'datasources' && (
-          <div className="space-y-6 page-transition-wrap">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: "easeOut" }} className="space-y-6 page-transition-wrap">
             
             {/* Disclaimer Notice Banner */}
             <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 p-4 rounded-2xl flex items-center gap-3 text-xs font-mono slide-edge-top">
@@ -3869,7 +4008,7 @@ function App() {
                 <span>Data Security: ISO 27001 TLS Mutual Auth</span>
               </div>
             </footer>
-          </div>
+          </motion.div>
         )}
         </TwinErrorBoundary>
       </main>
