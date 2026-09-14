@@ -113,42 +113,65 @@ export default function SparkAssistant({
         {!isOpen && (
           <div 
             onClick={() => setIsOpen(true)}
-            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/80 dark:bg-zinc-900/90 text-amber-300 border border-amber-500/40 shadow-[0_4px_20px_rgba(245,158,11,0.25)] text-xs font-mono font-bold cursor-pointer hover:scale-105 transition-all duration-200 backdrop-blur-md animate-in fade-in slide-in-from-right-4 select-none"
+            className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-full bg-black/85 dark:bg-zinc-900/90 text-amber-300 border border-amber-500/50 shadow-[0_4px_25px_rgba(245,158,11,0.35)] text-xs font-mono font-bold cursor-pointer hover:scale-105 transition-all duration-200 backdrop-blur-md animate-in fade-in slide-in-from-right-4 select-none spark-pill-shimmer"
+            style={{ backgroundImage: 'linear-gradient(90deg, rgba(245,158,11,0.15), rgba(251,191,36,0.3), rgba(245,158,11,0.15))' }}
           >
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-            <span>Ask SPARK AI</span>
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400 shadow-[0_0_8px_#f59e0b]" />
+            </span>
+            <span className="tracking-wide">Ask SPARK AI</span>
           </div>
         )}
 
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className={
-            "relative group w-13 h-13 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 shadow-2xl " +
-            (isOpen 
-              ? "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 rotate-90 border border-white/20" 
-              : "bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-300 text-zinc-950 hover:scale-110 active:scale-95 shadow-[0_0_25px_rgba(245,158,11,0.6)] border-2 border-amber-300/80 ring-4 ring-amber-500/20")
-          }
-          title="SPARK: Oil India Operational Copilot"
-          aria-label="Open SPARK AI Assistant"
-        >
-          {isOpen ? (
-            <X className="w-6 h-6" />
-          ) : (
-            <div className="relative flex items-center justify-center">
-              {/* Animated Spark Halo Ring */}
-              <div className="absolute inset-[-4px] rounded-2xl bg-amber-400/30 animate-pulse blur-xs" />
-              <div className="relative flex items-center justify-center">
-                <Zap className="w-6 h-6 fill-zinc-950 stroke-zinc-950 drop-shadow-md transform -rotate-12 group-hover:rotate-0 transition-transform duration-300" />
-                <Sparkles className="w-3.5 h-3.5 text-white absolute -top-1.5 -right-1.5 animate-spin" style={{ animationDuration: '6s' }} />
-              </div>
-            </div>
+        <div className="relative">
+          {/* Dual Concentric Expanding Radar Waves */}
+          {!isOpen && (
+            <>
+              <div className="absolute inset-0 rounded-2xl border-2 border-amber-400/50 pointer-events-none spark-radar-wave-1" />
+              <div className="absolute inset-0 rounded-2xl border border-amber-300/40 pointer-events-none spark-radar-wave-2" />
+            </>
           )}
 
-          {/* Online badge dot */}
-          {!isOpen && (
-            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-zinc-900 shadow-sm" />
-          )}
-        </button>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className={
+              "relative group w-14 h-14 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 shadow-2xl " +
+              (isOpen 
+                ? "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 rotate-90 border border-white/20" 
+                : "bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-300 text-zinc-950 hover:scale-110 active:scale-95 spark-floating-btn spark-energy-pulse border-2 border-amber-300/90 ring-4 ring-amber-500/25")
+            }
+            title="SPARK: Oil India Operational Copilot"
+            aria-label="Open SPARK AI Assistant"
+          >
+            {isOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <div className="relative flex items-center justify-center">
+                {/* Micro Ambient Glow */}
+                <div className="absolute inset-[-6px] rounded-2xl bg-amber-400/40 animate-pulse blur-xs" />
+                
+                {/* Orbiting Micro Energy Particle */}
+                <div className="absolute w-full h-full pointer-events-none flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_#ffffff] spark-orbit-particle" />
+                </div>
+
+                <div className="relative flex items-center justify-center">
+                  <Zap className="w-7 h-7 fill-zinc-950 stroke-zinc-950 drop-shadow-md transform -rotate-12 group-hover:rotate-0 transition-transform duration-300" />
+                  <Sparkles className="w-4 h-4 text-white absolute -top-2 -right-2 animate-spin drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]" style={{ animationDuration: '4s' }} />
+                </div>
+              </div>
+            )}
+
+            {/* Online Live Status Beacon */}
+            {!isOpen && (
+              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-400 border-2 border-zinc-950 shadow-[0_0_6px_#34d399]" />
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* ── SPARK CHAT POPUP WINDOW ── */}
@@ -170,15 +193,19 @@ export default function SparkAssistant({
             (darkMode ? "bg-zinc-950/80 border-white/10" : "bg-slate-100/90 border-slate-200")
           }>
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 flex items-center justify-center text-zinc-950 shadow-[0_0_15px_rgba(245,158,11,0.5)] flex-shrink-0">
-                <Zap className="w-5 h-5 fill-zinc-950" />
+              <div className="relative">
+                <div className="absolute inset-[-2px] rounded-xl bg-amber-400/40 animate-ping opacity-60 pointer-events-none" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 flex items-center justify-center text-zinc-950 shadow-[0_0_15px_rgba(245,158,11,0.6)] flex-shrink-0 relative">
+                  <Zap className="w-5 h-5 fill-zinc-950 animate-pulse" />
+                </div>
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
                   <h3 className="font-display font-black text-sm tracking-wider uppercase leading-none text-white dark:text-white light:text-slate-900">
                     SPARK <span className="text-amber-400">AI</span>
                   </h3>
-                  <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[9px] font-mono font-bold">
+                  <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[9px] font-mono font-bold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     ONLINE
                   </span>
                 </div>
