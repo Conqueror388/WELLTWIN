@@ -1170,11 +1170,11 @@ function App() {
                 </button>
 
                 {showUserMenu && (
-                  <div className={`absolute right-0 mt-2 w-72 rounded-2xl p-4 shadow-2xl z-50 text-xs font-sans border backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 ${
+                  <div className={`absolute right-0 sm:right-0 top-full mt-2.5 w-80 max-w-[calc(100vw-2rem)] rounded-2xl p-4 shadow-2xl z-50 text-xs font-sans border backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 transform-gpu ${
                     darkMode ? 'bg-zinc-900/98 border-amber-500/30 text-zinc-300 shadow-[0_15px_35px_rgba(0,0,0,0.8)]' : 'bg-white/98 border-slate-300 text-slate-800 shadow-2xl'
                   }`}>
                     {/* User Header */}
-                    <div className={`border-b pb-3 mb-3 flex items-start gap-3 ${darkMode ? 'border-zinc-800' : 'border-slate-200'}`}>
+                    <div className={`border-b pb-3 mb-3 flex items-start gap-3 min-w-0 ${darkMode ? 'border-zinc-800' : 'border-slate-200'}`}>
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-zinc-950 font-black text-sm flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.4)] flex-shrink-0">
                         {currentUser?.name ? currentUser.name.split(' ').map(n => n[0]).join('').slice(0, 2) : 'EN'}
                       </div>

@@ -441,7 +441,7 @@ export default function EngineerAdminLogin({
   };
 
   return (
-    <div className={`fixed inset-0 z-40 flex flex-col justify-between overflow-y-auto font-sans select-none transition-colors duration-500 portal-entrance-root relative ${
+    <div className={`fixed inset-0 z-40 flex flex-col justify-between overflow-y-auto overflow-x-hidden w-full font-sans select-none transition-colors duration-500 portal-entrance-root relative ${
       darkMode ? 'dark-theme bg-[#05070c] text-zinc-100' : 'light-theme bg-[#eef2f8] text-slate-900'
     }`}>
       {/* ── CENTRAL CYBERNETIC LENS BLOOM ── */}
