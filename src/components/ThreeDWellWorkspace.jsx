@@ -29,7 +29,8 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
     illustrativeMode = false,
     selectedAsset: selectedAssetProp = null,
     assetViewMode = 'normal',
-    darkMode = true
+    darkMode = true,
+    throttleFPS = 0
   },
   ref
 ) {
@@ -168,6 +169,9 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
 
   const assetViewModeRef = useRef(assetViewMode);
   useEffect(() => { assetViewModeRef.current = assetViewMode; }, [assetViewMode]);
+
+  const throttleFPSRef = useRef(throttleFPS);
+  useEffect(() => { throttleFPSRef.current = throttleFPS; }, [throttleFPS]);
 
   useEffect(() => {
     if (!selectedAssetProp) {
@@ -898,6 +902,11 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
       if (!isTabVisibleRef.current || !isVisibleRef.current) return;
 
       const now = performance.now() * 0.001;
+
+      // FPS cap for secondary tabs (reservoir, optimization) — skip frame if too soon
+      const fpsLimit = throttleFPSRef.current;
+      if (fpsLimit > 0 && (now - lastTime) < (1 / fpsLimit)) return;
+
       const delta = Math.min(0.05, now - lastTime);
       lastTime = now;
       const time = now;
@@ -911,7 +920,7 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
           if (sunLight.castShadow) sunLight.castShadow = false;
         } else {
           if (!sunLight.castShadow) sunLight.castShadow = true;
-          if (frameCount % 2 === 0) {
+          if (frameCount % 4 === 0) {
             renderer.shadowMap.needsUpdate = true;
           }
         }
@@ -1245,67 +1254,76 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
       }
 
       // ── DRIVE REFINED SUBTLE UNDERGROUND THERMAL PULSE & SHOCKWAVE EFFECTS ──
+      const heatMapVisible = showSubsurfaceHeatMapRef.current;
+      const oilFlowVisible = showSubsurfaceOilFlowRef.current;
+
       // A. Heat Sphere Thermal Breathing & Dynamic Temperature Color (Tightly Scaled)
       if (heatSphere) {
-        heatSphere.visible = showSubsurfaceHeatMapRef.current;
-        const rVal = parseFloat(currentMetricsRef.current.heated_radius) || 1.8;
-        const breath = 1.0 + Math.sin(time * 3.5) * 0.08;
-        heatSphere.scale.setScalar(rVal * 0.65 * breath);
+        heatSphere.visible = heatMapVisible;
+        if (heatMapVisible) {
+          const rVal = parseFloat(currentMetricsRef.current.heated_radius) || 1.8;
+          const breath = 1.0 + Math.sin(time * 3.5) * 0.08;
+          heatSphere.scale.setScalar(rVal * 0.65 * breath);
 
-        const tempVal = inputsRef.current.steam_T || 220;
-        if (tempVal > 300) {
-          heatSphere.material.color.setHex(0xdc2626);
-          heatSphere.material.emissive.setHex(0xb91c1c);
-        } else if (tempVal >= 220) {
-          heatSphere.material.color.setHex(0xf97316);
-          heatSphere.material.emissive.setHex(0xc2410c);
-        } else if (tempVal >= 120) {
-          heatSphere.material.color.setHex(0x0d9488);
-          heatSphere.material.emissive.setHex(0x0f766e);
-        } else {
-          heatSphere.material.color.setHex(0x1e3a8a);
-          heatSphere.material.emissive.setHex(0x1e40af);
+          const tempVal = inputsRef.current.steam_T || 220;
+          if (tempVal > 300) {
+            heatSphere.material.color.setHex(0xdc2626);
+            heatSphere.material.emissive.setHex(0xb91c1c);
+          } else if (tempVal >= 220) {
+            heatSphere.material.color.setHex(0xf97316);
+            heatSphere.material.emissive.setHex(0xc2410c);
+          } else if (tempVal >= 120) {
+            heatSphere.material.color.setHex(0x0d9488);
+            heatSphere.material.emissive.setHex(0x0f766e);
+          } else {
+            heatSphere.material.color.setHex(0x1e3a8a);
+            heatSphere.material.emissive.setHex(0x1e40af);
+          }
+          heatSphere.material.emissiveIntensity = 0.65 + Math.sin(time * 5) * 0.25;
         }
-        heatSphere.material.emissiveIntensity = 0.65 + Math.sin(time * 5) * 0.25;
       }
 
-      // B. Expanding Volumetric Thermal Shockwave Shells (Reduced radius & soft opacity)
-      thermalPulseShells.forEach((shell, sIdx) => {
-        shell.visible = showSubsurfaceHeatMapRef.current;
-        const baseR = parseFloat(currentMetricsRef.current.heated_radius) || 1.8;
-        const wave = (time * 0.35 + sIdx * 0.33) % 1.0;
-        const sScale = baseR * (0.65 + wave * 0.85);
-        shell.scale.setScalar(sScale);
-        shell.material.opacity = (1.0 - wave) * 0.35;
-        shell.rotation.y += 0.012;
-      });
+      // B-D: Thermal shells, perforation rings, sparks — skip ALL math when hidden
+      thermalPulseShells.forEach((shell) => { shell.visible = heatMapVisible; });
+      perforationRings.forEach((pRing) => { pRing.visible = heatMapVisible; });
+      perfSparks.forEach((sp) => { sp.mesh.visible = heatMapVisible; });
 
-      // C. Expanding Horizontal Perforation Energy Rings (Proportional radius)
-      perforationRings.forEach((pRing, rIdx) => {
-        pRing.visible = showSubsurfaceHeatMapRef.current;
-        const rWave = (time * 0.45 + rIdx * 0.33) % 1.0;
-        const rScale = 1.0 + rWave * 4.2;
-        pRing.scale.set(rScale, rScale, 1.0);
-        pRing.material.opacity = (1.0 - rWave) * 0.45;
-      });
+      if (heatMapVisible && frameCount % 2 === 0) {
+        // B. Expanding Volumetric Thermal Shockwave Shells
+        thermalPulseShells.forEach((shell, sIdx) => {
+          const baseR = parseFloat(currentMetricsRef.current.heated_radius) || 1.8;
+          const wave = (time * 0.35 + sIdx * 0.33) % 1.0;
+          const sScale = baseR * (0.65 + wave * 0.85);
+          shell.scale.setScalar(sScale);
+          shell.material.opacity = (1.0 - wave) * 0.35;
+          shell.rotation.y += 0.012;
+        });
 
-      // D. Perforation Channel Energy Sparks (Proportional flow distance)
-      perfSparks.forEach((sp) => {
-        sp.mesh.visible = showSubsurfaceHeatMapRef.current;
-        const spProg = (time * sp.speed + sp.seed) % 1.0;
-        const dist = 0.8 + spProg * 3.8;
-        sp.mesh.position.set(
-          Math.cos(sp.angle) * dist,
-          Math.sin(time * 5 + sp.seed) * 0.25,
-          Math.sin(sp.angle) * dist
-        );
-        sp.mesh.scale.setScalar(0.5 + Math.sin(spProg * Math.PI) * 0.35);
-      });
+        // C. Expanding Horizontal Perforation Energy Rings
+        perforationRings.forEach((pRing, rIdx) => {
+          const rWave = (time * 0.45 + rIdx * 0.33) % 1.0;
+          const rScale = 1.0 + rWave * 4.2;
+          pRing.scale.set(rScale, rScale, 1.0);
+          pRing.material.opacity = (1.0 - rWave) * 0.45;
+        });
 
-      // E. Reservoir Geological Flow Vectors (Clean GPU transform scaling)
+        // D. Perforation Channel Energy Sparks
+        perfSparks.forEach((sp) => {
+          const spProg = (time * sp.speed + sp.seed) % 1.0;
+          const dist = 0.8 + spProg * 3.8;
+          sp.mesh.position.set(
+            Math.cos(sp.angle) * dist,
+            Math.sin(time * 5 + sp.seed) * 0.25,
+            Math.sin(sp.angle) * dist
+          );
+          sp.mesh.scale.setScalar(0.5 + Math.sin(spProg * Math.PI) * 0.35);
+        });
+      }
+
+      // E. Reservoir Geological Flow Vectors (skip math when hidden)
       if (reservoirArrows) {
-        reservoirArrows.visible = showSubsurfaceOilFlowRef.current;
-        if (showSubsurfaceOilFlowRef.current) {
+        reservoirArrows.visible = oilFlowVisible;
+        if (oilFlowVisible && frameCount % 2 === 0) {
           steamArrows.forEach((arr, idx) => {
             const pulse = 0.85 + Math.sin(time * 5 + idx) * 0.25;
             arr.scale.set(1, 1, pulse);
@@ -1318,24 +1336,29 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
       }
       // ────────────────────────────────────────────────────────────────────────
 
+
       // Surface auxiliary equipment and environmental animations (only when surface facility is visible)
       if (surfaceGroup.visible) {
-        // Warning beacons flashing
-        warningBeacons.forEach(b => {
-          const intensity = 0.5 + Math.sin(time * 8) * 0.5;
-          if (b.children[0] && b.children[0].material) b.children[0].material.color.setHSL(0, 1.0, 0.35 + intensity * 0.25);
-          if (b.children[2]) b.children[2].intensity = intensity * 2.2;
-        });
+        // Warning beacons flashing (throttled to every 3rd frame — cosmetic only)
+        if (frameCount % 3 === 0) {
+          warningBeacons.forEach(b => {
+            const intensity = 0.5 + Math.sin(time * 8) * 0.5;
+            if (b.children[0] && b.children[0].material) b.children[0].material.color.setHSL(0, 1.0, 0.35 + intensity * 0.25);
+            if (b.children[2]) b.children[2].intensity = intensity * 2.2;
+          });
+        }
 
-        // Roaring flare flame
-        if (fl?.flareLight) {
-          fl.flareLight.intensity = 4.5 + Math.sin(time * 24) * 2.5;
-        }
-        if (fl?.flameMesh) {
-          fl.flameMesh.scale.set(1.2 + Math.sin(time * 16) * 0.3, 1.6 + Math.cos(time * 19) * 0.4, 1.2 + Math.sin(time * 14) * 0.3);
-        }
-        if (fl?.flameInner) {
-          fl.flameInner.scale.set(1.0 + Math.sin(time * 28) * 0.2, 1.3 + Math.cos(time * 22) * 0.3, 1.0 + Math.sin(time * 25) * 0.2);
+        // Roaring flare flame (throttled to every 2nd frame)
+        if (frameCount % 2 === 0) {
+          if (fl?.flareLight) {
+            fl.flareLight.intensity = 4.5 + Math.sin(time * 24) * 2.5;
+          }
+          if (fl?.flameMesh) {
+            fl.flameMesh.scale.set(1.2 + Math.sin(time * 16) * 0.3, 1.6 + Math.cos(time * 19) * 0.4, 1.2 + Math.sin(time * 14) * 0.3);
+          }
+          if (fl?.flameInner) {
+            fl.flameInner.scale.set(1.0 + Math.sin(time * 28) * 0.2, 1.3 + Math.cos(time * 22) * 0.3, 1.0 + Math.sin(time * 25) * 0.2);
+          }
         }
 
         // Drive Combustion Blower Fan & Meteorological Anemometer
@@ -1346,8 +1369,8 @@ const ThreeDWellWorkspace = forwardRef(function ThreeDWellWorkspace(
           cs.userData.anemometer.rotation.y = time * 6.5;
         }
 
-        // Boiler steam exhaust smoke billows (throttled to alternate frames to reduce GPU buffer upload overhead)
-        if (frameCount % 2 === 0) {
+        // Boiler steam exhaust smoke billows (throttled to every 4th frame to reduce GPU buffer upload overhead)
+        if (frameCount % 4 === 0) {
           const smPos = smokeGeo.attributes.position.array;
           for (let i = 0; i < smokeCount; i++) {
             const s = smokeSpeeds[i];
