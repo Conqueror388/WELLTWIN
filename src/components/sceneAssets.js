@@ -16,7 +16,7 @@ export function buildPumpjack(masterGroup, m) {
   pumpjack.userData = {
     id: "pumpjack", name: "Cyclic Steam Pumpjack (BGW-014)", type: "Surface Artificial Lift (SRP)",
     purpose: "Extracts heavy viscous crude oil from Jodhpur Sandstone via sucker rod pumping.",
-    status: "Active Production", health: 94, pressure: "420 psi", temp: "45 °C", flow: "118 bbl/d",
+    status: "Active Production", health: 94, pressure: "420 psi", temp: "45 °C", flow: "212.2 bbl/d",
     vibration: "1.4 mm/s (Normal)", maintenance: "Scheduled in 42 days (Polished Rod Seal check)",
     alerts: "None — Operating within normal mechanical limits.",
     worldPos: new THREE.Vector3(-7.5, 10, 18)
@@ -533,7 +533,7 @@ export function buildWellhead(masterGroup, m) {
     id: "wellhead", name: "Sub-Surface Wellhead Assembly (X-Tree)", type: "Wellhead Flow Control",
     purpose: "Controls wellbore pressure, steam injection routing, and production discharge.",
     status: "Active Injection / Production", health: 96, pressure: "540 psi", temp: "45 °C",
-    flow: "118 bbl/d", vibration: "0.8 mm/s", maintenance: "Flange seal test passed (100% integrity)",
+    flow: "212.2 bbl/d", vibration: "0.8 mm/s", maintenance: "Flange seal test passed (100% integrity)",
     alerts: "High fluid temperature during thermal cycle.",
     worldPos: new THREE.Vector3(5, 6, 18)
   };
@@ -560,7 +560,7 @@ export function buildWellhead(masterGroup, m) {
     health: 98,
     pressure: "420 psi",
     temp: "42 °C",
-    flow: "118 bbl/d",
+    flow: "212.2 bbl/d",
     vibration: "0.4 mm/s",
     maintenance: "Packing ring set inspected (API Spec 11B compliant)",
     alerts: "Zero leaks detected across primary and secondary barrier seals.",
@@ -655,7 +655,7 @@ export function buildSeparator(masterGroup, m) {
     id: "separator", name: "High-Pressure Separator (V-101)", type: "Production Separator Vessel",
     purpose: "Separates produced fluids into heavy crude, produced water, and natural gas.",
     status: "Stabilized Flowing", health: 91, pressure: "210 psi", temp: "84 °C",
-    flow: "118 bbl/d", vibration: "0.5 mm/s", maintenance: "Desanding flush scheduled in 14 days",
+    flow: "212.2 bbl/d", vibration: "0.5 mm/s", maintenance: "Desanding flush scheduled in 14 days",
     alerts: "Liquid level at 68% capacity.",
     worldPos: new THREE.Vector3(16, 6, -5)
   };
@@ -1212,7 +1212,7 @@ export function buildSubsurface(masterGroup, m, Tres) {
     health: 96,
     pressure: "1,200 psi",
     temp: `${Tres} °C`,
-    flow: "118 bbl/d",
+    flow: "212.2 bbl/d",
     vibration: "0.0 mm/s",
     maintenance: "Porosity: 22.4% | Permeability: 420 mD | Water Cut: 8.5%",
     alerts: "CSS Steam cycle active — Viscosity reduced via thermal injection.",

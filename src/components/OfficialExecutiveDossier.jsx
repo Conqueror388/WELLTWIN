@@ -44,8 +44,8 @@ export default function OfficialExecutiveDossier({
         gearbox_torque_pct: 68.5
       },
       ai_pareto_optimized: {
-        oil_yield_bbl_d: 144.0,
-        net_yield_increase_pct: 22.0,
+        oil_yield_bbl_d: 212.0,
+        net_yield_increase_pct: 748.0,
         steam_reduction_pct: -18.0,
         spm: 8.4,
         stroke_length_in: 120,
@@ -245,9 +245,9 @@ export default function OfficialExecutiveDossier({
                     </tr>
                     <tr className="bg-amber-500/10 print:bg-amber-50">
                       <td className="py-2.5 px-3 font-black text-white print:text-black">Net Produced Crude Yield</td>
-                      <td className="py-2.5 px-3 font-bold">118.0 bbl/d</td>
-                      <td className="py-2.5 px-3 font-black text-amber-400 print:text-amber-800 text-sm">144.0 bbl/d</td>
-                      <td className="py-2.5 px-3 font-black text-emerald-400 print:text-emerald-700 text-sm">+22.0% Net Gain</td>
+                      <td className="py-2.5 px-3 font-bold">25.0 bbl/d</td>
+                      <td className="py-2.5 px-3 font-black text-amber-400 print:text-amber-800 text-sm">212.0 bbl/d</td>
+                      <td className="py-2.5 px-3 font-black text-emerald-400 print:text-emerald-700 text-sm">+748.0% Net Gain</td>
                       <td className="py-2.5 px-3 font-bold text-emerald-400 print:text-emerald-700">+₹15,45,000 / Month</td>
                     </tr>
                   </tbody>

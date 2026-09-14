@@ -1846,7 +1846,7 @@ function App() {
                             ["Steam Temperature", "235", "°C"],
                             ["SRP Pumping Speed", "8.2", "SPM"],
                             ["Stroke Length", "100", "inches"],
-                            ["Expected oil yield", "183", "bbl/d"]
+                            ["Expected oil yield", `${Math.round(currentMetrics.q_oil || 212)}`, "bbl/d"]
                           ].map(e => e.map(val => `"${val}"`).join(",")).join("\n");
                           const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                           const link = document.createElement('a');
@@ -1981,8 +1981,8 @@ function App() {
             {/* ── Top Telemetry KPI Ribbon ── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
               {[
-                { label: 'Baseline Production', rawVal: 25.0, suffix: ' bbl/d', textClass: 'text-slate-800 dark:text-zinc-100', pipClass: 'led-pip-gold', desc: 'Measured SCADA Baseline (BGW-014)' },
-                { label: 'Optimized Oil Yield', rawVal: currentMetrics.q_oil, suffix: ' bbl/d', textClass: 'text-amber-400', pipClass: 'led-pip-gold', desc: 'Simulated CSS+SRP Production' },
+                { label: 'Baseline Production', rawVal: 25.0, suffix: ' bbl/d', textClass: 'text-slate-800 dark:text-zinc-100', pipClass: 'led-pip-gold', desc: 'Cold SCADA Baseline (45°C Unheated)' },
+                { label: 'Target Production', rawVal: currentMetrics.q_oil, suffix: ' bbl/d', textClass: 'text-amber-400', pipClass: 'led-pip-gold', desc: 'Optimized CSS+SRP Target Yield' },
                 { label: 'Thermal Efficiency', rawVal: Math.max(30, Math.round(85 - currentMetrics.steamOilRatio * 15)), suffix: '%', textClass: 'text-amber-400', pipClass: 'led-pip-gold', desc: 'Thermodynamic Enthalpy Recovery' },
                 { label: 'SRP Operating Health', rawVal: currentMetrics.health_score, suffix: '%', textClass: 'text-white', pipClass: 'led-pip-gold', desc: `System State: ${currentMetrics.risk_class}` }
               ].map((card, idx) => (
@@ -2142,7 +2142,7 @@ function App() {
               <div className="grid grid-cols-1 md:grid-cols-5 gap-3 font-mono text-xs text-zinc-300">
                 <div className="bg-slate-100 dark:bg-black/30 p-3 rounded-lg ">
                   <span className="text-zinc-200 dark:text-zinc-200 light:text-slate-700 font-bold block mb-1">1. BASELINE</span>
-                  <p className="text-zinc-200 dark:text-zinc-200 light:text-slate-700 text-xs font-medium leading-relaxed">Cold reservoir (45°C), 11,500 cP viscosity. 25 bbl/d baseline flow.</p>
+                  <p className="text-zinc-200 dark:text-zinc-200 light:text-slate-700 text-xs font-medium leading-relaxed">Cold reservoir (45°C), 11,500 cP viscosity. 25.0 bbl/d baseline flow.</p>
                 </div>
                 <div className="bg-slate-100 dark:bg-black/30 p-3 rounded-lg ">
                   <span className="text-amber-400 font-bold block mb-1">2. INJECTION</span>
@@ -2154,7 +2154,7 @@ function App() {
                 </div>
                 <div className="bg-slate-100 dark:bg-black/30 p-3 rounded-lg ">
                   <span className="text-amber-400 font-bold block mb-1">4. EXTRACTION</span>
-                  <p className="text-zinc-200 dark:text-zinc-200 light:text-slate-700 text-xs font-medium leading-relaxed">Oil production surges to 212 bbl/d. 84% thermal efficiency.</p>
+                  <p className="text-zinc-200 dark:text-zinc-200 light:text-slate-700 text-xs font-medium leading-relaxed">Oil production reaches target of {Math.round(currentMetrics.q_oil || 212)} bbl/d. 84% thermal efficiency.</p>
                 </div>
                 <div className="bg-slate-100 dark:bg-black/30 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
                   <span className="text-amber-300 font-bold block mb-1">5. RECOMMEND</span>

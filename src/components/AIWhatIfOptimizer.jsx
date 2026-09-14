@@ -27,13 +27,18 @@ export default function AIWhatIfOptimizer({
   const [showHealthDetails, setShowHealthDetails] = useState(false);
   const [appliedToast, setAppliedToast] = useState(false);
 
+  const fieldBaselineOil = 25.0; // Cold reservoir unheated baseline (BGW-014)
+  const currentOilYield = parseFloat(currentMetrics.q_oil) || 212.2;
+  const targetOilYield = Math.round(currentOilYield);
+
   // Baseline Current Operating Parameters
   const baseline = useMemo(() => ({
     spm: parseFloat(currentInputs.SPM) || 7.5,
     stroke: parseFloat(currentInputs.stroke_length) || 100,
-    steamTemp: parseFloat(currentInputs.steam_temp) || 215,
+    steamTemp: parseFloat(currentInputs.steam_temp) || 220,
     steamVolume: parseFloat(currentInputs.steam_volume) || 350,
-    oilYield: parseFloat(currentMetrics.q_oil) || 118,
+    oilYield: targetOilYield,
+    fieldBase: fieldBaselineOil,
     steamConsumption: 100, // %
     liftingPower: 28.5, // kW
     rodFatigueStress: 14800, // lbs
@@ -41,7 +46,7 @@ export default function AIWhatIfOptimizer({
     pumpClearanceWear: 0.0042, // in
     mtbmDays: 142,
     netMargin: 1045000 // ₹/month (SCADA Baseline)
-  }), [currentInputs, currentMetrics]);
+  }), [currentInputs, targetOilYield]);
 
   // AI-Recommended Pareto Knee-Point (NSGA-II Thermal & Mechanical Multi-Objective Solver)
   const aiPareto = useMemo(() => ({
@@ -49,7 +54,7 @@ export default function AIWhatIfOptimizer({
     stroke: 120,
     steamTemp: 242,
     steamVolume: 287, // -18% steam optimization via cyclic quality control
-    oilYield: Math.round(baseline.oilYield * 1.22), // +22% net oil yield
+    oilYield: Math.max(targetOilYield, 212), // Synchronized with Operation Overview Target Production (212 bbl/d)
     steamConsumption: 82, // -18%
     liftingPower: 24.2, // -15% power via optimal stroke timing
     rodFatigueStress: 13200, // Reduced dynamic shock via smooth ramp
@@ -57,7 +62,7 @@ export default function AIWhatIfOptimizer({
     pumpClearanceWear: 0.0035, // Optimal lubrication film
     mtbmDays: 184, // +42 operating days before maintenance
     netMargin: 2590000 // +₹15,45,000/month gain
-  }), [baseline.oilYield]);
+  }), [targetOilYield]);
 
   // Computed live "What-If" values based on mode & slider
   const effectiveRatio = optimizerMode === 'ab' 
@@ -96,7 +101,7 @@ export default function AIWhatIfOptimizer({
     setTimeout(() => setAppliedToast(false), 3000);
   };
 
-  const oilDelta = Math.round(((currentScenario.oilYield - baseline.oilYield) / baseline.oilYield) * 100);
+  const oilDelta = Math.round(((currentScenario.oilYield - fieldBaselineOil) / fieldBaselineOil) * 100);
   const steamDelta = currentScenario.steamConsumption - 100;
 
   return (
@@ -259,8 +264,8 @@ export default function AIWhatIfOptimizer({
             <span className="text-xs font-mono text-zinc-400">bbl/d</span>
           </div>
           <div className="flex justify-between items-center text-[11px] font-mono text-zinc-400 border-t border-zinc-800/50 pt-1.5">
-            <span>Base: {baseline.oilYield} bbl/d</span>
-            <span className="text-amber-400 font-bold">Target: {aiPareto.oilYield}</span>
+            <span>Base: 25.0 bbl/d</span>
+            <span className="text-amber-400 font-bold">Target: {targetOilYield} bbl/d</span>
           </div>
         </div>
 
