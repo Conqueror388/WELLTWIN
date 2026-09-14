@@ -2582,3 +2582,59 @@ input[type="range"]:hover::-webkit-slider-thumb {
   color: #0f172a !important;
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   HIGH-PERFORMANCE TACTICAL HOVER MICRO-INTERACTIONS (GPU COMPOSITED)
+   Strictly adheres to transform & opacity rules to prevent 3D canvas re-draws
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* 1. Subtle tactile lift on interactive cards & panels */
+.hover-holo-lift {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.22s ease !important;
+  will-change: transform;
+}
+
+.dark-theme .hover-holo-lift:hover,
+.hover-holo-lift:hover {
+  transform: translateY(-2.5px) !important;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.65), 0 0 16px rgba(245, 158, 11, 0.12) !important;
+}
+
+.light-theme .hover-holo-lift:hover {
+  transform: translateY(-2.5px) !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 12px 24px -6px rgba(15, 23, 42, 0.12), 0 0 14px rgba(217, 119, 6, 0.1) !important;
+}
+
+/* 2. Interactive Table & List Row Hover */
+.hover-row-glow {
+  transition: background-color 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+
+.hover-row-glow:hover {
+  background-color: rgba(245, 158, 11, 0.045) !important;
+}
+
+.light-theme .hover-row-glow:hover {
+  background-color: rgba(245, 158, 11, 0.07) !important;
+}
+
+/* 3. Tactical Badge / Tag Hover */
+.hover-tag-glow {
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-tag-glow:hover {
+  border-color: rgba(245, 158, 11, 0.6) !important;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.25) !important;
+  transform: scale(1.02);
+}
+
+/* 4. Navigation Tab Hover Enhancement */
+.tab-btn-stitch:not(.active):hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-bottom: 2px solid rgba(245, 158, 11, 0.35) !important;
+  color: #f59e0b !important;
+  transform: translateY(-1px);
+}
+

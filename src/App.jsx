@@ -1662,22 +1662,22 @@ function App() {
 
             {/* Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="glass-panel p-4 flex flex-col justify-between min-h-[110px] slide-edge-bottom stagger-1">
+              <div className="glass-panel p-4 flex flex-col justify-between min-h-[110px] hover-holo-lift slide-edge-bottom stagger-1">
                 <span className="text-xs text-zinc-200 dark:text-zinc-200 light:text-slate-700 font-mono uppercase font-bold">Physics Model Accuracy</span>
                 <strong className="text-3xl sm:text-4xl text-white font-mono font-bold my-1">91.4%</strong>
                 <span className="text-xs text-zinc-200 dark:text-zinc-200 light:text-slate-700 mt-1">Boberg-Lantz core solver</span>
               </div>
-              <div className="glass-panel p-4 flex flex-col justify-between min-h-[110px] slide-edge-bottom stagger-2">
+              <div className="glass-panel p-4 flex flex-col justify-between min-h-[110px] hover-holo-lift slide-edge-bottom stagger-2">
                 <span className="text-xs text-zinc-200 dark:text-zinc-200 light:text-slate-700 font-mono uppercase font-bold">ML Residual Lift</span>
                 <strong className="text-3xl sm:text-4xl text-amber-400 font-mono font-bold my-1">+7.2%</strong>
                 <span className="text-xs text-zinc-200 dark:text-zinc-200 light:text-slate-700 mt-1">LSTM correction active</span>
               </div>
-              <div className="glass-panel p-4 flex flex-col justify-between min-h-[110px] slide-edge-bottom stagger-3">
+              <div className="glass-panel p-4 flex flex-col justify-between min-h-[110px] hover-holo-lift slide-edge-bottom stagger-3">
                 <span className="text-xs text-zinc-200 dark:text-zinc-200 light:text-slate-700 font-mono uppercase font-bold">Cross-Validation Score</span>
                 <strong className="text-3xl sm:text-4xl text-white font-mono font-bold my-1">RMSE 4.8 bbl/d</strong>
                 <span className="text-xs text-zinc-200 dark:text-zinc-200 light:text-slate-700 mt-1">Tested on holdout wells</span>
               </div>
-              <div className="glass-panel p-4 flex flex-col justify-between min-h-[110px] slide-edge-bottom stagger-4">
+              <div className="glass-panel p-4 flex flex-col justify-between min-h-[110px] hover-holo-lift slide-edge-bottom stagger-4">
                 <span className="text-xs text-zinc-200 dark:text-zinc-200 light:text-slate-700 font-mono uppercase font-bold">Model Version</span>
                 <strong className="text-2xl text-amber-400 font-mono mt-1">v1.2.0-GBRT</strong>
                 <span className="text-xs text-zinc-200 dark:text-zinc-200 light:text-slate-700 mt-1">Last calibrated 2026-08-20</span>
@@ -2065,7 +2065,7 @@ function App() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               
               {/* 1. Marx-Langenheim Radius */}
-              <div className="glass-panel p-5 flex flex-col justify-between gap-3 slide-edge-bottom stagger-1">
+              <div className="glass-panel p-5 flex flex-col justify-between gap-3 hover-holo-lift slide-edge-bottom stagger-1">
                 <div className="flex justify-between items-center border-b border-white/5 pb-2.5">
                   <h3 className="label-caps flex items-center gap-1.5 text-slate-800 dark:text-zinc-200 font-bold">
                     <Flame className="w-4 h-4 text-amber-400" />
@@ -2085,7 +2085,7 @@ function App() {
               </div>
 
               {/* 2. Arrhenius Viscosity Decay */}
-              <div className="glass-panel p-5 flex flex-col justify-between gap-3 slide-edge-bottom stagger-2">
+              <div className="glass-panel p-5 flex flex-col justify-between gap-3 hover-holo-lift slide-edge-bottom stagger-2">
                 <div className="flex justify-between items-center border-b border-white/5 pb-2.5">
                   <h3 className="label-caps flex items-center gap-1.5 text-slate-800 dark:text-zinc-200 font-bold">
                     <Droplets className="w-4 h-4 text-amber-400" />
@@ -2109,7 +2109,7 @@ function App() {
               </div>
 
               {/* 3. Pareto Frontiers */}
-              <div className="glass-panel p-5 flex flex-col justify-between gap-3 slide-edge-bottom stagger-3">
+              <div className="glass-panel p-5 flex flex-col justify-between gap-3 hover-holo-lift slide-edge-bottom stagger-3">
                 <div className="flex justify-between items-center border-b border-white/5 pb-2.5">
                   <h3 className="label-caps flex items-center gap-1.5 text-slate-800 dark:text-zinc-200 font-bold">
                     <TrendingUp className="w-4 h-4 text-amber-400" />
@@ -3743,7 +3743,7 @@ function App() {
                         { name: 'Heavy Oil Yield', base: '25.0 bbl/d', sim: `${currentMetrics.q_oil} bbl/d`, delta: `${(currentMetrics.q_oil - 25.0).toFixed(1)} bbl/d`, active: currentMetrics.q_oil !== 25.0 },
                         { name: 'Crude Viscosity', base: '11,500 cP', sim: `${currentMetrics.viscosity} cP`, delta: `${currentMetrics.viscosity - 11500} cP`, active: currentMetrics.viscosity !== 11500 }
                       ].map((row, idx) => (
-                        <div key={idx} className="grid grid-cols-4 p-3 border-b border-zinc-900/30/50 items-center">
+                        <div key={idx} className="grid grid-cols-4 p-3 border-b border-zinc-900/30/50 items-center hover-row-glow rounded-lg">
                           <span className="text-zinc-300 font-medium">{row.name}</span>
                           <span className="text-center text-zinc-300 dark:text-zinc-300 light:text-slate-600">{row.base}</span>
                           <span className={`text-center font-bold ${row.active ? 'text-amber-400' : 'text-zinc-200 dark:text-zinc-200 light:text-slate-700'}`}>{row.sim}</span>
